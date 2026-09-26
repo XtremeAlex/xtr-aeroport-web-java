@@ -16,7 +16,7 @@ backend.
 
 - `xtr-aeroport-ms` — microservizio di ricerca aeroporti (API REST)
 - `xtr-aeroport-batch` — import massivo dati (Spring Batch + GraalVM native)
-- `xtr-aeroport-typological` — servizio dati tipologici
+- `xtr-aeroport-typology` — servizio dati tipologici
 - `xtr-aeroport-common-lib` — libreria condivisa
 - `xtr-aeroport-web-java` — questo modulo: frontend web
 
