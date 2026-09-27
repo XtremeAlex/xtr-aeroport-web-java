@@ -3,10 +3,15 @@ package com.xtremealex.aeroport.web.client;
 import com.xtremealex.aeroport.web.client.dto.AirportTypeView;
 import com.xtremealex.aeroport.web.client.dto.AirportView;
 import com.xtremealex.aeroport.web.client.dto.CountryView;
+import com.xtremealex.aeroport.web.client.dto.DecodeResultView;
 import com.xtremealex.aeroport.web.client.dto.PageResponse;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.service.annotation.GetExchange;
 import org.springframework.web.service.annotation.HttpExchange;
+import org.springframework.web.service.annotation.PostExchange;
+
+import java.util.List;
 
 /**
  * Client dichiarativo (stile Feign, nativo Spring 6) verso xtr-aeroport-api.
@@ -28,4 +33,12 @@ public interface AeroportApi {
 
     @GetExchange("/airport-types")
     PageResponse<AirportTypeView> airportTypes(@RequestParam int page, @RequestParam int size);
+
+    /** Decodifica un messaggio EDIFACT (text/plain) -> lista di risultati con validazione. */
+    @PostExchange(url = "/edifact/decode", contentType = "text/plain")
+    List<DecodeResultView> decodeEdifact(@RequestBody String raw);
+
+    /** Compila un messaggio EDIFACT PAXLST a partire dal JSON di dominio. */
+    @PostExchange(url = "/edifact/encode", contentType = "application/json", accept = "text/plain")
+    String encodeEdifact(@RequestBody String paxlstJson);
 }

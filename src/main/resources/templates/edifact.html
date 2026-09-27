@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="it">
+<head th:replace="~{fragments/layout :: head(${title})}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+
+<main class="container">
+    <h1>Convertitore EDIFACT · PAXLST</h1>
+
+    <div class="edi-grid">
+        <!-- DECODE -->
+        <section class="edi-card">
+            <h2>Decodifica messaggio</h2>
+            <form method="post" th:action="@{/edifact/decode}">
+                <textarea name="raw" rows="10" class="edi-input"
+                          th:text="${rawInput}"
+                          placeholder="Incolla qui il messaggio EDIFACT (UNB...UNZ)"></textarea>
+                <button type="submit">Decodifica ▸</button>
+            </form>
+        </section>
+
+        <!-- ENCODE -->
+        <section class="edi-card">
+            <h2>Compila messaggio (da JSON)</h2>
+            <form method="post" th:action="@{/edifact/encode}">
+                <textarea name="json" rows="10" class="edi-input" th:text="${jsonInput}"
+                          placeholder='{"messageFunction":"745","flightNumber":"AZ999","departureAirport":"MXP","arrivalAirport":"LHR","passengers":[{"type":"FL","surname":"VERDI","givenName":"LUCA","nationality":"ITA","birthDate":"1990-05-10","documentType":"P","documentNumber":"YB111"}]}'></textarea>
+                <button type="submit">Genera EDIFACT ▸</button>
+            </form>
+        </section>
+    </div>
+
+    <!-- OUTPUT ENCODE -->
+    <section th:if="${encoded}" class="edi-output">
+        <h2>Messaggio EDIFACT generato</h2>
+        <pre class="edi-code" th:text="${encoded}"></pre>
+    </section>
+
+    <!-- OUTPUT DECODE: TABELLONE -->
+    <div th:if="${results}" th:each="res : ${results}">
+        <!-- stato -->
+        <div class="edi-status" th:classappend="${res.valid()} ? 'ok' : 'ko'">
+            <span th:text="${res.valid()} ? '● MESSAGGIO VALIDO' : '● ERRORI RILEVATI'">stato</span>
+        </div>
+
+        <!-- info volo stile tabellone -->
+        <section class="board" th:if="${res.message()}">
+            <div class="board-head">
+                <span>VOLO</span><span>VETTORE</span><span>PARTENZA</span><span>ARRIVO</span><span>DATA PART.</span>
+            </div>
+            <div class="board-row">
+                <span class="flap" th:text="${res.message().flightNumber()} ?: '—'">—</span>
+                <span class="flap" th:text="${res.message().carrier()} ?: '—'">—</span>
+                <span class="flap" th:text="${res.message().departureAirport()} ?: '—'">—</span>
+                <span class="flap" th:text="${res.message().arrivalAirport()} ?: '—'">—</span>
+                <span class="flap" th:text="${res.message().departureDateTime()} ?: '—'">—</span>
+            </div>
+        </section>
+
+        <!-- passeggeri stile tabellone -->
+        <section class="board" th:if="${res.message() != null and !res.message().passengers().isEmpty()}">
+            <div class="board-head pax">
+                <span>TIPO</span><span>COGNOME</span><span>NOME</span><span>SEX</span>
+                <span>NAZ.</span><span>NASCITA</span><span>DOC</span><span>NUMERO</span>
+            </div>
+            <div class="board-row pax" th:each="p : ${res.message().passengers()}">
+                <span class="flap" th:text="${p.type()}">—</span>
+                <span class="flap" th:text="${p.surname()}">—</span>
+                <span class="flap" th:text="${p.givenName()}">—</span>
+                <span class="flap" th:text="${p.gender()} ?: '—'">—</span>
+                <span class="flap" th:text="${p.nationality()} ?: '—'">—</span>
+                <span class="flap" th:text="${p.birthDate()} ?: '—'">—</span>
+                <span class="flap" th:text="${p.documentType()} ?: '—'">—</span>
+                <span class="flap" th:text="${p.documentNumber()} ?: '—'">—</span>
+            </div>
+        </section>
+
+        <!-- errori -->
+        <section th:if="${!res.issues().isEmpty()}" class="edi-issues">
+            <h3>Diagnostica</h3>
+            <ul>
+                <li th:each="i : ${res.issues()}" th:classappend="${i.severity()}"
+                    th:text="'[' + ${i.severity()} + '] ' + ${i.code()} + ' — ' + ${i.message()}">issue</li>
+            </ul>
+        </section>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>
