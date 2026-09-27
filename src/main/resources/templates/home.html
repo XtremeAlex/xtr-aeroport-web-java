@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}" lang="it">
+<head th:replace="~{fragments/layout :: head(#{home.title})}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+
+<main class="container">
+
+    <!-- ============ HERO ============ -->
+    <section class="hero">
+        <div class="hero__copy">
+            <p class="hero__eyebrow" th:text="#{home.hero.eyebrow}">EDIFACT PAXLST engine</p>
+            <h1 class="hero__title" th:text="#{home.hero.title}">Decode and build PAXLST messages.</h1>
+            <p class="hero__subtitle" th:text="#{home.hero.subtitle}">A tool to read, validate and compose PAXLST.</p>
+
+            <div class="hero__cta">
+                <a class="btn" th:href="@{/edifact}" th:text="#{home.hero.ctaDecode}">Decode a message</a>
+                <a class="btn btn--ghost" th:href="@{/edifact/new}" th:text="#{home.hero.ctaEncode}">Create a message</a>
+            </div>
+
+            <div class="hero__badges">
+                <span class="pill" th:text="#{home.hero.badgePrivacy}">No data stored</span>
+                <span class="pill" th:text="#{home.hero.badgeOpen}">Open source</span>
+                <span class="pill" th:text="#{home.hero.badgeSelf}">Local processing</span>
+            </div>
+        </div>
+
+        <!-- elemento visivo dot-matrix coerente col tema -->
+        <div class="hero__visual" aria-hidden="true">
+            <div class="dot-matrix"></div>
+            <span class="hero__glyph">PAXLST</span>
+        </div>
+    </section>
+
+    <!-- ============ COSA PUOI FARE (elemento centrale) ============ -->
+    <section class="home-section">
+        <div class="section-header">
+            <span class="section-header__index">01</span>
+            <h2 th:text="#{home.section.tools}">What you can do</h2>
+        </div>
+
+        <div class="tool-grid">
+            <a class="tool-card" th:href="@{/edifact}">
+                <span class="tool-card__tag">01 / DECODE</span>
+                <h3 th:text="#{home.tool.decode.title}">Decode</h3>
+                <p th:text="#{home.tool.decode.desc}">Paste or upload a PAXLST message.</p>
+                <span class="tool-card__cta" th:text="#{home.tool.decode.cta}">Go to decode →</span>
+            </a>
+            <a class="tool-card" th:href="@{/edifact/new}">
+                <span class="tool-card__tag">02 / ENCODE</span>
+                <h3 th:text="#{home.tool.encode.title}">Encode</h3>
+                <p th:text="#{home.tool.encode.desc}">Fill in a form and get a valid PAXLST.</p>
+                <span class="tool-card__cta" th:text="#{home.tool.encode.cta}">Go to create →</span>
+            </a>
+        </div>
+    </section>
+
+    <!-- ============ DATI DI RIFERIMENTO (secondari) ============ -->
+    <section class="home-section">
+        <div class="section-header">
+            <span class="section-header__index">02</span>
+            <h2 th:text="#{home.section.data}">Reference data</h2>
+        </div>
+
+        <div class="data-grid">
+            <a class="data-card" th:href="@{/airports}">
+                <h3 th:text="#{home.data.airports.title}">Airports</h3>
+                <p th:text="#{home.data.airports.desc}">Worldwide airport registry.</p>
+                <span class="data-card__cta" th:text="#{home.data.airports.cta}">Browse airports →</span>
+            </a>
+            <a class="data-card" th:href="@{/countries}">
+                <h3 th:text="#{home.data.countries.title}">Countries</h3>
+                <p th:text="#{home.data.countries.desc}">Countries with ISO codes and flags.</p>
+                <span class="data-card__cta" th:text="#{home.data.countries.cta}">Browse countries →</span>
+            </a>
+        </div>
+    </section>
+
+    <!-- ============ COME TRATTIAMO I DATI ============ -->
+    <section class="home-section">
+        <div class="section-header">
+            <span class="section-header__index">03</span>
+            <h2 th:text="#{home.section.trust}">How we handle your data</h2>
+        </div>
+
+        <div class="trust-grid">
+            <div class="trust-item">
+                <h3 th:text="#{home.trust.privacy.title}">No persistence</h3>
+                <p th:text="#{home.trust.privacy.desc}">Data stays in memory only.</p>
+            </div>
+            <div class="trust-item">
+                <h3 th:text="#{home.trust.open.title}">Open source</h3>
+                <p th:text="#{home.trust.open.desc}">The code is public and auditable.</p>
+            </div>
+            <div class="trust-item">
+                <h3 th:text="#{home.trust.local.title}">Processing close to the data</h3>
+                <p th:text="#{home.trust.local.desc}">Runs on modest resources.</p>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

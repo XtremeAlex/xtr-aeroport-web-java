@@ -1,50 +1,65 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="it">
-<head th:replace="~{fragments/layout :: head(${title})}"></head>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}" lang="it">
+<head th:replace="~{fragments/layout :: head(#{edifact.title})}"></head>
 <body>
 <header th:replace="~{fragments/layout :: header}"></header>
 
 <main class="container">
-    <h1>Decodifica EDIFACT</h1>
-    <p class="subtitle">PAXLST · carica un log Type B o incolla uno o più messaggi</p>
+    <h1 th:text="#{edifact.title}">Decodifica EDIFACT</h1>
+    <p class="subtitle" th:text="#{edifact.decode.intro}">PAXLST</p>
     <div class="divider"></div>
 
     <div class="tabs">
-        <a class="tab active" th:href="@{/edifact}">Decodifica</a>
-        <a class="tab" th:href="@{/edifact/new}">Crea messaggio</a>
+        <a class="tab active" th:href="@{/edifact}" th:text="#{edifact.tab.decode}">Decodifica</a>
+        <a class="tab" th:href="@{/edifact/new}" th:text="#{edifact.tab.encode}">Crea messaggio</a>
     </div>
 
     <div class="card">
         <form method="post" th:action="@{/edifact/decode}" enctype="multipart/form-data">
-            <label>Messaggio / log</label>
+            <label th:text="#{edifact.tab.decode}">Messaggio</label>
             <textarea name="raw" class="edi-input" th:text="${rawInput}"
-                      placeholder="Incolla EDIFACT o log Type B (INFO [..] Message Id ..)"></textarea>
+                      th:placeholder="#{edifact.decode.placeholder}"></textarea>
             <div class="edi-file">
-                <label>oppure carica un file</label>
+                <label th:text="#{edifact.decode.file}">oppure carica un file</label>
                 <input type="file" name="file" accept=".log,.edi,.txt,.edf">
             </div>
-            <button type="submit">Decodifica</button>
+            <button type="submit" th:text="#{edifact.decode.submit}">Decodifica</button>
         </form>
     </div>
+
+    <!--
+      NOTA DI MODELLO: lo standard EDIFACT/PAXLST NON trasporta il tipo di aeromobile
+      né il posto a sede assegnato al passeggero. Questi campi non esistono nei DTO
+      (PaxlstView / PassengerView) e non vengono mostrati come dati inventati: dove un
+      valore atteso manca, la vista mostra un placeholder discreto #{edifact.notAvailable}.
+    -->
 
     <!-- LISTA VOLI (card) con drill-down passeggeri via Alpine -->
     <section th:if="${flights != null and !flights.isEmpty()}"
              x-data="{ open: null }">
-        <h2 th:text="'Voli trovati (' + ${flights.size()} + ')'">Voli</h2>
+        <h2 th:text="#{edifact.flights.title} + ' (' + ${flights.size()} + ')'">Voli</h2>
         <div class="flights">
             <a th:each="f,it : ${flights}" href="#" class="flight-card"
+               th:classappend="${f.flagged()} ? ' is-flagged'"
                th:attr="data-idx=${it.index}"
                x-on:click.prevent="open = (open === $el.dataset.idx ? null : $el.dataset.idx)">
                 <div class="fc-route">
                     <span th:text="${f.departureAirport()} ?: '???'">MXP</span>
                     <span class="arrow">→</span>
                     <span th:text="${f.arrivalAirport()} ?: '???'">FCO</span>
+                    <!-- triangolino rosso: volo con anomalie di validazione -->
+                    <span th:if="${f.flagged()}" class="pax-warn" role="img"
+                          th:title="#{edifact.pax.errorTitle}" aria-hidden="false"
+                          th:attr="aria-label=#{edifact.pax.errorTitle}">&#9888;</span>
                 </div>
                 <div class="fc-no" th:text="'Volo ' + (${f.flightNumber()} ?: '—')">Volo AZ123</div>
                 <div class="fc-meta">
-                    <span th:text="${f.departureDateTime()} ?: ''"></span>
-                    <span class="badge pax" th:text="${f.passengers().size()} + ' PAX'">0 PAX</span>
-                    <span class="badge" th:text="${f.messageCount()} + ' MSG'">1 MSG</span>
+                    <span th:if="${f.departureDateTime()}" th:text="${f.departureDateTime()}"></span>
+                    <span th:unless="${f.departureDateTime()}" class="na" th:text="#{edifact.notAvailable}"></span>
+                    <span class="badge pax" th:text="${f.passengers().size()} + ' ' + #{edifact.flights.pax}">0 PAX</span>
+                    <span class="badge" th:text="${f.messageCount()} + ' ' + #{edifact.flights.msg}">1 MSG</span>
+                    <span th:if="${f.flagged()}" class="badge badge--warn"
+                          th:text="#{edifact.flights.withErrors}">con anomalie</span>
                 </div>
             </a>
         </div>
@@ -52,16 +67,49 @@
         <!-- passeggeri del volo selezionato -->
         <template th:each="f,it : ${flights}">
             <div th:attr="x-show=('open === \'' + ${it.index} + '\'')" style="margin-top:1.5rem" x-cloak>
-                <h2 th:text="'Passeggeri · ' + (${f.flightNumber()} ?: '—')">Passeggeri</h2>
+                <h2>
+                    <span th:text="#{edifact.flights.title} + ' · ' + (${f.flightNumber()} ?: '—')">Passeggeri</span>
+                    <span th:if="${f.flagged()}" class="pax-warn" role="img"
+                          th:title="#{edifact.pax.errorTitle}"
+                          th:attr="aria-label=#{edifact.pax.errorTitle}">&#9888;</span>
+                </h2>
+
+                <!-- pannello anomalie del volo (issue a livello di messaggio) -->
+                <div th:if="${f.flagged() and !f.issues().isEmpty()}" class="log-console" style="margin-bottom:1rem">
+                    <div class="log-line" th:each="i : ${f.issues()}" th:classappend="${i.severity()}">
+                        <span class="lvl" th:text="${i.severity()}">INFO</span>
+                        <span class="code" th:text="${i.code()}">CODE</span>
+                        <span th:if="${i.segmentTag()}" class="code" th:text="${i.segmentTag()}">SEG</span>
+                        <span th:text="${i.message()}">msg</span>
+                    </div>
+                </div>
+
                 <table class="grid">
                     <thead>
-                    <tr><th>Tipo</th><th>Cognome</th><th>Nome</th><th>Sesso</th><th>Naz.</th>
-                        <th>Nascita</th><th>Doc</th><th>Numero</th><th>PNR</th></tr>
+                    <tr>
+                        <th></th>
+                        <th th:text="#{edifact.pax.col.type}">Tipo</th>
+                        <th th:text="#{edifact.pax.col.surname}">Cognome</th>
+                        <th th:text="#{edifact.pax.col.given}">Nome</th>
+                        <th th:text="#{edifact.pax.col.gender}">Sesso</th>
+                        <th th:text="#{edifact.pax.col.nationality}">Naz.</th>
+                        <th th:text="#{edifact.pax.col.birth}">Nascita</th>
+                        <th th:text="#{edifact.pax.col.doc}">Doc</th>
+                        <th th:text="#{edifact.pax.col.docnum}">Numero</th>
+                        <th th:text="#{edifact.pax.col.pnr}">PNR</th>
+                    </tr>
                     </thead>
                     <tbody>
-                    <tr th:each="p : ${f.passengers()}">
-                        <td th:text="${p.type()}">FL</td>
-                        <td th:text="${p.surname()}">—</td>
+                    <tr th:each="p : ${f.passengers()}" th:classappend="${f.flagged()} ? 'row-flagged'">
+                        <td>
+                            <!-- se il volo ha anomalie, ogni passeggero del messaggio è segnalato:
+                                 lo standard non correla l'issue al singolo passeggero -->
+                            <span th:if="${f.flagged()}" class="pax-warn" role="img"
+                                  th:title="#{edifact.pax.errorTitle}"
+                                  th:attr="aria-label=#{edifact.pax.errorTitle}">&#9888;</span>
+                        </td>
+                        <td th:text="${p.type()} ?: '—'">FL</td>
+                        <td th:text="${p.surname()} ?: '—'">—</td>
                         <td th:text="${p.givenName()} ?: '—'">—</td>
                         <td th:text="${p.gender()} ?: '—'">—</td>
                         <td th:text="${p.nationality()} ?: '—'">—</td>
@@ -78,10 +126,10 @@
 
     <!-- ISPETTORE (albero segmenti) -->
     <section th:if="${inspect != null and !inspect.isEmpty()}" class="inspector">
-        <h2>Ispettore</h2>
+        <h2 th:text="#{edifact.inspector.title}">Ispettore</h2>
         <div th:each="ins,iw : ${inspect}" class="ins-msg">
             <div class="ins-bar" th:classappend="${ins.valid()} ? 'ok' : 'ko'">
-                <span th:text="'Messaggio ' + (${iw.index}+1)">Messaggio 1</span>
+                <span th:text="'#' + (${iw.index}+1)">Messaggio 1</span>
                 <span class="mono" th:if="${ins.messageId()}" th:text="${ins.messageId()}"></span>
                 <span th:if="${ins.receivedAt()}" th:text="${ins.receivedAt()}"></span>
                 <span class="delims" th:if="${ins.delimiters()}"
@@ -92,7 +140,7 @@
                     <summary th:classappend="${seg.known()} ? '' : 'orphan'">
                         <span class="seg-tag" th:text="${seg.tag()}">TAG</span>
                         <span class="seg-desc" th:if="${seg.known()}" th:text="${seg.description()}">desc</span>
-                        <span class="seg-desc" th:unless="${seg.known()}">non previsto dallo schema</span>
+                        <span class="seg-desc" th:unless="${seg.known()}" th:text="#{edifact.notAvailable}">non previsto</span>
                         <span class="seg-usage" th:if="${seg.usage()}" th:text="${seg.usage()}">R</span>
                     </summary>
                     <div class="elements">
@@ -114,7 +162,7 @@
     </section>
 
     <section th:if="${error}" class="card" style="border-color:var(--accent)">
-        <p th:text="${error}">errore</p>
+        <p th:text="${error} ?: #{edifact.error}">errore</p>
     </section>
 </main>
 

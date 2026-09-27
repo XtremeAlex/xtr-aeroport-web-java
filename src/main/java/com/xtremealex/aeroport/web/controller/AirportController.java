@@ -15,7 +15,7 @@ public class AirportController {
         this.api = api;
     }
 
-    @GetMapping({"/", "/airports"})
+    @GetMapping("/airports")
     public String airports(@RequestParam(required = false) String name,
                            @RequestParam(required = false) String isoCountry,
                            @RequestParam(defaultValue = "0") int page,
@@ -26,7 +26,6 @@ public class AirportController {
         model.addAttribute("page", result);
         model.addAttribute("filterName", name);
         model.addAttribute("filterCountry", isoCountry);
-        model.addAttribute("title", "Aeroporti");
         return "airports";
     }
 }

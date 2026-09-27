@@ -1,9 +1,36 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="it">
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}" lang="it">
+<!--
+  Layout base condiviso: frammenti head(pageTitle) / header / footer.
+  Il tema (chiaro/scuro) è una preferenza tecnica salvata in localStorage;
+  la lingua (it/en) è gestita da Spring via cookie XTR_LANG e parametro ?lang.
+-->
 <head th:fragment="head(pageTitle)">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title th:text="${pageTitle} ?: 'Aeroport'">Aeroport</title>
+    <meta name="description" th:content="#{home.hero.subtitle}" content="">
+    <meta name="color-scheme" content="dark light">
+    <title th:text="${pageTitle} ?: #{home.title}">Aeroport</title>
+
+    <!--
+      Anti-FOUC: applica il tema prima del primo paint per evitare il lampo di colore.
+      Legge la preferenza salvata; se assente segue prefers-color-scheme del sistema.
+      La classe "light" sul <html> attiva il tema chiaro (vedi app.css).
+    -->
+    <script>
+        (function () {
+            try {
+                var saved = localStorage.getItem('theme');
+                var prefersLight = window.matchMedia
+                    && window.matchMedia('(prefers-color-scheme: light)').matches;
+                var theme = saved || (prefersLight ? 'light' : 'dark');
+                if (theme === 'light') {
+                    document.documentElement.classList.add('light');
+                }
+            } catch (e) { /* localStorage non disponibile: resta sul tema scuro di default */ }
+        })();
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -13,16 +40,153 @@
 
 <header th:fragment="header" class="site-header">
     <nav class="nav">
-        <a class="brand" th:href="@{/}">aeroport</a>
-        <a th:href="@{/}">Aeroporti</a>
-        <a th:href="@{/countries}">Paesi</a>
-        <a th:href="@{/edifact}">Decodifica</a>
-        <a th:href="@{/edifact/new}">Crea EDIFACT</a>
+        <a class="brand" th:href="@{/}" th:text="#{nav.brand}">aeroport</a>
+
+        <div class="nav__links">
+            <a th:href="@{/}" th:text="#{nav.home}">Home</a>
+            <a th:href="@{/edifact}" th:text="#{nav.decode}">Decodifica</a>
+            <a th:href="@{/edifact/new}" th:text="#{nav.encode}">Crea EDIFACT</a>
+            <a th:href="@{/airports}" th:text="#{nav.airports}">Aeroporti</a>
+            <a th:href="@{/countries}" th:text="#{nav.countries}">Paesi</a>
+        </div>
+
+        <div class="nav__tools">
+            <!-- Switch lingua: conserva il path corrente aggiungendo ?lang=it|en.
+                 requestURI contiene già il context-path, quindi non usiamo @{}. -->
+            <div class="lang-switch" role="group" aria-label="Language / Lingua">
+                <a class="lang-flag"
+                   th:classappend="${#locale.language == 'it'} ? ' is-active'"
+                   th:href="${langSwitchIt}"
+                   th:attr="aria-current=${#locale.language == 'it'} ? 'true'"
+                   aria-label="Italiano" title="Italiano">
+                    <svg viewBox="0 0 3 2" width="22" height="15" aria-hidden="true" focusable="false">
+                        <rect width="1" height="2" x="0" fill="#009246"/>
+                        <rect width="1" height="2" x="1" fill="#ffffff"/>
+                        <rect width="1" height="2" x="2" fill="#ce2b37"/>
+                    </svg>
+                </a>
+                <a class="lang-flag"
+                   th:classappend="${#locale.language == 'en'} ? ' is-active'"
+                   th:href="${langSwitchEn}"
+                   th:attr="aria-current=${#locale.language == 'en'} ? 'true'"
+                   aria-label="English" title="English">
+                    <svg viewBox="0 0 60 30" width="22" height="15" aria-hidden="true" focusable="false">
+                        <clipPath id="ujFlag"><rect width="60" height="30"/></clipPath>
+                        <g clip-path="url(#ujFlag)">
+                            <rect width="60" height="30" fill="#012169"/>
+                            <path d="M0,0 60,30 M60,0 0,30" stroke="#fff" stroke-width="6"/>
+                            <path d="M0,0 60,30 M60,0 0,30" clip-path="url(#ujFlag)" stroke="#C8102E" stroke-width="4"/>
+                            <path d="M30,0 V30 M0,15 H60" stroke="#fff" stroke-width="10"/>
+                            <path d="M30,0 V30 M0,15 H60" stroke="#C8102E" stroke-width="6"/>
+                        </g>
+                    </svg>
+                </a>
+            </div>
+
+            <!-- Toggle tema chiaro/scuro (vanilla JS in fondo alla pagina) -->
+            <button type="button" class="theme-toggle" id="themeToggle"
+                    aria-label="Toggle theme" aria-pressed="false" title="Tema chiaro / scuro">
+                <svg class="theme-toggle__sun" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
+                    <circle cx="12" cy="12" r="4.5" fill="currentColor"/>
+                    <g stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/>
+                    </g>
+                </svg>
+                <svg class="theme-toggle__moon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
+                    <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" fill="currentColor"/>
+                </svg>
+            </button>
+        </div>
     </nav>
 </header>
 
 <footer th:fragment="footer" class="site-footer">
-    <p>Suite Aeroport · EDIFACT PAXLST</p>
+    <div class="footer-grid">
+        <div class="footer-brand">
+            <span class="footer-brand__name" th:text="#{nav.brand}">aeroport</span>
+            <p class="footer-brand__tagline" th:text="#{footer.tagline}">EDIFACT PAXLST engine</p>
+            <p class="footer-brand__copy" th:text="#{footer.copy('2026')}">© 2026 Aeroport</p>
+            <p class="footer-brand__author">
+                <span th:text="#{footer.author}">Andrei Alexandru Dabija</span>
+                <a class="footer-brand__site" href="https://xtremealex.github.io" target="_blank" rel="noopener noreferrer">xtremealex.github.io ↗</a>
+            </p>
+        </div>
+        <div class="footer-links">
+            <button type="button" class="footer-link" data-dialog="dlgPrivacy" th:text="#{footer.privacy}">Privacy</button>
+            <button type="button" class="footer-link" data-dialog="dlgOpen" th:text="#{footer.opensource}">Open source</button>
+            <button type="button" class="footer-link" data-dialog="dlgUsage" th:text="#{footer.usage}">Uso corretto</button>
+            <a class="footer-link" href="https://github.com/XtremeAlex" target="_blank" rel="noopener noreferrer"
+               th:text="#{footer.github}">GitHub</a>
+        </div>
+    </div>
+
+    <!-- Modali legali -->
+    <dialog class="legal-modal" id="dlgPrivacy">
+        <div class="legal-modal__inner">
+            <h2 th:text="#{legal.privacy.title}">Privacy</h2>
+            <p th:text="#{legal.privacy.body}">…</p>
+            <button type="button" class="btn btn--ghost legal-modal__close" data-close th:text="#{legal.close}">Chiudi</button>
+        </div>
+    </dialog>
+    <dialog class="legal-modal" id="dlgOpen">
+        <div class="legal-modal__inner">
+            <h2 th:text="#{legal.opensource.title}">Open source</h2>
+            <p th:text="#{legal.opensource.body}">…</p>
+            <button type="button" class="btn btn--ghost legal-modal__close" data-close th:text="#{legal.close}">Chiudi</button>
+        </div>
+    </dialog>
+    <dialog class="legal-modal" id="dlgUsage">
+        <div class="legal-modal__inner">
+            <h2 th:text="#{legal.usage.title}">Uso corretto</h2>
+            <p th:text="#{legal.usage.body}">…</p>
+            <button type="button" class="btn btn--ghost legal-modal__close" data-close th:text="#{legal.close}">Chiudi</button>
+        </div>
+    </dialog>
+
+    <!-- JS minimale vanilla: toggle tema + apertura/chiusura dialog legali -->
+    <script>
+        (function () {
+            // --- Tema ---
+            var root = document.documentElement;
+            var toggle = document.getElementById('themeToggle');
+            function syncPressed() {
+                if (toggle) {
+                    toggle.setAttribute('aria-pressed', root.classList.contains('light') ? 'true' : 'false');
+                }
+            }
+            syncPressed();
+            if (toggle) {
+                toggle.addEventListener('click', function () {
+                    root.classList.toggle('light');
+                    try {
+                        localStorage.setItem('theme', root.classList.contains('light') ? 'light' : 'dark');
+                    } catch (e) { /* ignore */ }
+                    syncPressed();
+                });
+            }
+
+            // --- Dialog legali ---
+            document.querySelectorAll('[data-dialog]').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var dlg = document.getElementById(btn.getAttribute('data-dialog'));
+                    if (dlg && typeof dlg.showModal === 'function') {
+                        dlg.showModal();
+                    } else if (dlg) {
+                        dlg.setAttribute('open', '');
+                    }
+                });
+            });
+            document.querySelectorAll('dialog.legal-modal').forEach(function (dlg) {
+                dlg.querySelectorAll('[data-close]').forEach(function (c) {
+                    c.addEventListener('click', function () { dlg.close(); });
+                });
+                // click sul backdrop chiude
+                dlg.addEventListener('click', function (ev) {
+                    if (ev.target === dlg) { dlg.close(); }
+                });
+            });
+        })();
+    </script>
 </footer>
 
 </body>

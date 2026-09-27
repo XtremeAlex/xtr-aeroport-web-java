@@ -16,6 +16,14 @@ spring:
       enabled: true
   thymeleaf:
     cache: true          # produzione: cache attiva
+  messages:
+    basename: messages
+    encoding: UTF-8
+    fallback-to-system-locale: false
+  servlet:
+    multipart:
+      max-file-size: 60MB
+      max-request-size: 60MB
   jmx:
     enabled: false
 
@@ -24,7 +32,7 @@ aeroport:
   api:
     base-url: ${AEROPORT_API_BASE_URL:http://localhost:8080/xtr-aeroport-api}
     connect-timeout-ms: ${AEROPORT_API_CONNECT_TIMEOUT_MS:2000}
-    read-timeout-ms: ${AEROPORT_API_READ_TIMEOUT_MS:5000}
+    read-timeout-ms: ${AEROPORT_API_READ_TIMEOUT_MS:30000}
 
 management:
   endpoints:

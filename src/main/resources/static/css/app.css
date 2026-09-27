@@ -156,3 +156,208 @@ label { display: block; font-family: var(--font-mono); font-size: .72rem;
 .pax-form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: .6rem;
                 border: 1px solid var(--border); border-radius: 8px; padding: 1rem; margin-bottom: .8rem; }
 .mono { font-family: var(--font-mono); }
+
+
+/* ============================================================
+   TEMA CHIARO — attivo con la classe .light sul tag <html>
+   (le variabili sovrascrivono quelle di :root)
+   ============================================================ */
+html.light {
+    --bg: #fafafa;
+    --bg-alt: #ffffff;
+    --surface: #f0f0f0;
+    --border: #e0e0e0;
+    --text: #1a1a1a;
+    --text-muted: #666666;
+    --accent: #ff3b30;
+    --accent-dim: rgba(255, 59, 48, 0.10);
+    --ok: #1a8f3c;
+    --warn: #b8860b;
+}
+
+/* transizione morbida al cambio tema */
+body { transition: background-color .25s ease, color .25s ease; }
+
+/* header semi-trasparente coerente in entrambi i temi */
+.site-header {
+    background: color-mix(in srgb, var(--bg) 85%, transparent);
+}
+/* superfici "quasi nere" del tema scuro -> variabile, così restano leggibili in chiaro */
+input, textarea, select,
+.edi-code, .tree, .el-comp { background: var(--bg-alt); }
+.log-console { background: var(--surface); }
+.el-pos { color: var(--text-muted); }
+html.light .log-line.INFO .lvl { color: #0a6cbf; }
+html.light .log-line .code { color: #4a6b8a; }
+
+/* ============================================================
+   NAV — layout a tre zone: brand · link · strumenti
+   ============================================================ */
+.nav { justify-content: flex-start; }
+.nav__links { display: flex; gap: 1.6rem; align-items: center; flex-wrap: wrap; }
+.nav__tools { margin-left: auto; display: flex; gap: .9rem; align-items: center; }
+
+/* Switch lingua con bandierine SVG */
+.lang-switch { display: flex; gap: .35rem; align-items: center; }
+.lang-flag {
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 2px; border-radius: 4px; line-height: 0;
+    border: 1px solid var(--border); opacity: .5; transition: opacity .2s, border-color .2s, transform .2s;
+}
+.lang-flag svg { display: block; border-radius: 2px; }
+.lang-flag:hover { opacity: 1; border-color: var(--accent); transform: translateY(-1px); }
+.lang-flag.is-active { opacity: 1; border-color: var(--accent); }
+
+/* Toggle tema (pill tondo) */
+.theme-toggle {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 38px; height: 38px; padding: 0; cursor: pointer;
+    border-radius: 999px; border: 1px solid var(--border);
+    background: var(--bg-alt); color: var(--text-muted); transition: all .2s;
+}
+.theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
+.theme-toggle .theme-toggle__sun { display: none; }
+.theme-toggle .theme-toggle__moon { display: block; }
+html.light .theme-toggle .theme-toggle__sun { display: block; }
+html.light .theme-toggle .theme-toggle__moon { display: none; }
+
+@media (max-width: 720px) {
+    .nav { flex-wrap: wrap; }
+    .nav__tools { margin-left: 0; width: 100%; justify-content: flex-end; }
+}
+
+/* ============================================================
+   HOME · vetrina
+   ============================================================ */
+.hero {
+    display: grid; grid-template-columns: 1.35fr 1fr; gap: 2.5rem; align-items: center;
+    padding: 2rem 0 3.5rem; border-bottom: 1px solid var(--border); margin-bottom: 1rem;
+}
+.hero__eyebrow {
+    font-family: var(--font-mono); font-size: .75rem; text-transform: uppercase;
+    letter-spacing: .18em; color: var(--accent); margin-bottom: 1rem;
+}
+.hero__title { font-size: clamp(2rem, 5.5vw, 3.4rem); line-height: 1.05; font-weight: 700;
+               letter-spacing: -.03em; margin-bottom: 1.1rem; }
+.hero__subtitle { color: var(--text-muted); font-size: 1.02rem; max-width: 46ch; margin-bottom: 1.8rem; }
+.hero__cta { display: flex; gap: .8rem; flex-wrap: wrap; margin-bottom: 1.6rem; }
+.hero__cta .btn { padding: .9rem 1.7rem; font-size: .82rem; }
+.hero__badges { display: flex; gap: .5rem; flex-wrap: wrap; }
+.pill {
+    font-family: var(--font-mono); font-size: .68rem; text-transform: uppercase; letter-spacing: .08em;
+    color: var(--text-muted); border: 1px solid var(--border); border-radius: 999px; padding: .3rem .8rem;
+}
+.hero__visual { position: relative; min-height: 240px; display: flex; align-items: center; justify-content: center; }
+.dot-matrix {
+    position: absolute; inset: 0; border: 1px solid var(--border); border-radius: 16px;
+    background-image: radial-gradient(var(--border) 1.4px, transparent 1.4px);
+    background-size: 18px 18px; opacity: .8;
+    -webkit-mask-image: radial-gradient(circle at center, #000 40%, transparent 78%);
+    mask-image: radial-gradient(circle at center, #000 40%, transparent 78%);
+}
+.hero__glyph {
+    position: relative; font-family: var(--font-mono); font-weight: 600;
+    font-size: clamp(1.4rem, 4vw, 2.2rem); letter-spacing: .3em; color: var(--accent);
+    text-shadow: 0 0 24px var(--accent-dim);
+}
+@media (max-width: 820px) {
+    .hero { grid-template-columns: 1fr; }
+    .hero__visual { min-height: 160px; order: -1; }
+}
+
+.home-section { padding: 2.6rem 0; }
+.section-header { display: flex; align-items: baseline; gap: 1rem; margin-bottom: 1.6rem; }
+.section-header__index {
+    font-family: var(--font-mono); font-size: .8rem; color: var(--accent); letter-spacing: .1em;
+    border: 1px solid var(--border); border-radius: 6px; padding: .2rem .55rem;
+}
+.section-header h2 { margin: 0; font-size: 1.3rem; }
+
+/* card strumenti (prominenti) */
+.tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.4rem; }
+.tool-card {
+    display: flex; flex-direction: column; gap: .6rem; text-decoration: none; color: var(--text);
+    background: var(--bg-alt); border: 1px solid var(--border); border-radius: 16px;
+    padding: 2rem 1.8rem; transition: all .2s; position: relative; overflow: hidden;
+}
+.tool-card::after {
+    content: ''; position: absolute; inset: auto -40% -60% auto; width: 70%; height: 70%;
+    background: radial-gradient(circle, var(--accent-dim), transparent 70%); opacity: 0; transition: opacity .3s;
+}
+.tool-card:hover { border-color: var(--accent); transform: translateY(-3px); }
+.tool-card:hover::after { opacity: 1; }
+.tool-card__tag {
+    font-family: var(--font-mono); font-size: .68rem; text-transform: uppercase; letter-spacing: .14em;
+    color: var(--text-muted);
+}
+.tool-card h3 { font-size: 1.5rem; margin: .2rem 0; letter-spacing: -.01em; }
+.tool-card p { color: var(--text-muted); font-size: .92rem; flex: 1; }
+.tool-card__cta { font-family: var(--font-mono); font-size: .78rem; color: var(--accent);
+                  text-transform: uppercase; letter-spacing: .06em; margin-top: .4rem; }
+
+/* card dati (secondarie, più piccole) */
+.data-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.data-card {
+    display: flex; flex-direction: column; gap: .4rem; text-decoration: none; color: var(--text);
+    background: transparent; border: 1px solid var(--border); border-radius: 12px;
+    padding: 1.3rem 1.4rem; transition: all .2s;
+}
+.data-card:hover { border-color: var(--accent); background: var(--accent-dim); }
+.data-card h3 { font-size: 1.05rem; margin: 0; }
+.data-card p { color: var(--text-muted); font-size: .84rem; }
+.data-card__cta { font-family: var(--font-mono); font-size: .72rem; color: var(--accent);
+                  text-transform: uppercase; letter-spacing: .06em; margin-top: .2rem; }
+
+/* trust */
+.trust-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; }
+.trust-item { border-left: 2px solid var(--accent); padding: .2rem 0 .2rem 1rem; }
+.trust-item h3 { font-size: 1rem; margin: 0 0 .35rem; }
+.trust-item p { color: var(--text-muted); font-size: .86rem; }
+
+@media (max-width: 720px) {
+    .tool-grid, .data-grid, .trust-grid { grid-template-columns: 1fr; }
+}
+
+/* ============================================================
+   FOOTER ricco
+   ============================================================ */
+.site-footer { text-align: left; padding: 0; }
+.footer-grid {
+    max-width: 1200px; margin: 0 auto; padding: 2.2rem 2rem;
+    display: flex; justify-content: space-between; gap: 2rem; flex-wrap: wrap;
+}
+.footer-brand__name { font-family: var(--font-mono); font-weight: 600; font-size: 1.05rem; color: var(--text); }
+.footer-brand__name::after { content: '.'; color: var(--accent); }
+.footer-brand__tagline { color: var(--text-muted); margin: .5rem 0 .2rem; }
+.footer-brand__copy { color: var(--text-muted); opacity: .75; }
+.footer-brand__author { color: var(--text-muted); margin-top: .5rem; font-size: .8rem; display: flex; flex-direction: column; gap: .1rem; }
+.footer-brand__site { color: var(--accent); text-decoration: none; font-family: var(--font-mono); font-size: .78rem; }
+.footer-brand__site:hover { text-decoration: underline; }
+.footer-links { display: flex; flex-direction: column; gap: .55rem; align-items: flex-start; }
+.footer-link {
+    background: none; border: none; padding: 0; cursor: pointer; text-align: left;
+    font-family: var(--font-mono); font-size: .78rem; text-transform: uppercase; letter-spacing: .06em;
+    color: var(--text-muted); text-decoration: none; transition: color .2s;
+}
+.footer-link:hover { color: var(--accent); }
+
+/* dialog legali */
+.legal-modal {
+    border: 1px solid var(--border); border-radius: 16px; background: var(--bg-alt); color: var(--text);
+    padding: 0; max-width: 560px; width: calc(100% - 3rem); box-shadow: 0 24px 80px rgba(0,0,0,.5);
+}
+.legal-modal::backdrop { background: rgba(0,0,0,.6); backdrop-filter: blur(4px); }
+.legal-modal__inner { padding: 2rem; }
+.legal-modal__inner h2 { margin: 0 0 1rem; }
+.legal-modal__inner p { color: var(--text-muted); font-size: .92rem; margin-bottom: 1.5rem; }
+.legal-modal__close { text-transform: uppercase; }
+
+/* ============================================================
+   Triangolino anomalie (decode)
+   ============================================================ */
+.pax-warn { color: var(--accent); font-size: 1em; line-height: 1; cursor: help; margin-left: .4rem; }
+.flight-card.is-flagged { border-color: var(--accent); }
+.flight-card.is-flagged .fc-route .pax-warn { margin-left: .5rem; }
+.badge--warn { border-color: var(--accent); color: var(--accent); }
+.grid tr.row-flagged td { background: var(--accent-dim); }
+.na { color: var(--text-muted); font-style: italic; opacity: .8; }

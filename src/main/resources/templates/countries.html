@@ -1,37 +1,43 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="it">
-<head th:replace="~{fragments/layout :: head(${title})}"></head>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}" lang="it">
+<head th:replace="~{fragments/layout :: head(#{countries.title})}"></head>
 <body>
 <header th:replace="~{fragments/layout :: header}"></header>
 
 <main class="container">
-    <h1>Paesi</h1>
+    <h1 th:text="#{countries.title}">Paesi</h1>
 
     <table class="grid">
         <thead>
-        <tr><th>ISO2</th><th>ISO3</th><th>Nome</th></tr>
+        <tr>
+            <th th:text="#{countries.col.iso2}">ISO2</th>
+            <th th:text="#{countries.col.iso3}">ISO3</th>
+            <th th:text="#{countries.col.name}">Nome</th>
+        </tr>
         </thead>
         <tbody>
         <tr th:if="${countries.isEmpty()}">
-            <td colspan="3" class="empty">Nessun paese disponibile</td>
+            <td colspan="3" class="empty" th:text="#{countries.empty}">Nessun paese disponibile</td>
         </tr>
         <tr th:each="c : ${countries}">
             <td>
                 <img th:if="${c.isoAlpha2()}" class="flag"
                      th:src="@{'/images/flag/svg/' + ${#strings.toLowerCase(c.isoAlpha2())} + '.svg'}"
                      th:alt="${c.isoAlpha2()}" loading="lazy">
-                <span th:text="${c.isoAlpha2()}">—</span>
+                <span th:text="${c.isoAlpha2()} ?: '—'">—</span>
             </td>
-            <td th:text="${c.isoAlpha3()}">—</td>
-            <td th:text="${c.name()}">—</td>
+            <td th:text="${c.isoAlpha3()} ?: '—'">—</td>
+            <td th:text="${c.name()} ?: '—'">—</td>
         </tr>
         </tbody>
     </table>
 
     <nav class="pager" th:if="${page.totalPages() > 1}">
-        <a th:if="${page.page() > 0}" th:href="@{/countries(page=${page.page()-1},size=${page.size()})}">‹ Prec</a>
+        <a th:if="${page.page() > 0}" th:href="@{/countries(page=${page.page()-1},size=${page.size()})}">
+            <span th:text="'‹ ' + #{common.prev}">‹ Prec</span></a>
         <span th:text="${page.page()+1} + ' / ' + ${page.totalPages()}">1 / 1</span>
-        <a th:if="${page.page()+1 < page.totalPages()}" th:href="@{/countries(page=${page.page()+1},size=${page.size()})}">Succ ›</a>
+        <a th:if="${page.page()+1 < page.totalPages()}" th:href="@{/countries(page=${page.page()+1},size=${page.size()})}">
+            <span th:text="#{common.next} + ' ›'">Succ ›</span></a>
     </nav>
 </main>
 

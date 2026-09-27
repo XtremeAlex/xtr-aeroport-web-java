@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="it">
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}" lang="it">
 <head th:replace="~{fragments/layout :: head(${title})}"></head>
 <body>
 <header th:replace="~{fragments/layout :: header}"></header>

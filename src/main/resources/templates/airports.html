@@ -1,43 +1,52 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="it">
-<head th:replace="~{fragments/layout :: head(${title})}"></head>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}" lang="it">
+<head th:replace="~{fragments/layout :: head(#{airports.title})}"></head>
 <body>
 <header th:replace="~{fragments/layout :: header}"></header>
 
 <main class="container">
-    <h1>Aeroporti</h1>
+    <h1 th:text="#{airports.title}">Aeroporti</h1>
 
     <form method="get" th:action="@{/airports}" class="filters">
-        <input type="text" name="name" th:value="${filterName}" placeholder="Nome aeroporto (min 3)">
-        <input type="text" name="isoCountry" th:value="${filterCountry}" placeholder="Paese ISO2 (es. IT)" maxlength="2">
-        <button type="submit">Cerca</button>
+        <input type="text" name="name" th:value="${filterName}" th:placeholder="#{airports.filter.name}">
+        <input type="text" name="isoCountry" th:value="${filterCountry}" th:placeholder="#{airports.filter.country}" maxlength="2">
+        <button type="submit" th:text="#{common.search}">Cerca</button>
     </form>
 
     <table class="grid">
         <thead>
-        <tr><th>IATA</th><th>ICAO</th><th>Nome</th><th>Città</th><th>Paese</th><th>Tipo</th></tr>
+        <tr>
+            <th th:text="#{airports.col.iata}">IATA</th>
+            <th th:text="#{airports.col.icao}">ICAO</th>
+            <th th:text="#{airports.col.name}">Nome</th>
+            <th th:text="#{airports.col.city}">Città</th>
+            <th th:text="#{airports.col.country}">Paese</th>
+            <th th:text="#{airports.col.type}">Tipo</th>
+        </tr>
         </thead>
         <tbody>
         <tr th:if="${airports.isEmpty()}">
-            <td colspan="6" class="empty">Nessun aeroporto trovato</td>
+            <td colspan="6" class="empty" th:text="#{airports.empty}">Nessun aeroporto trovato</td>
         </tr>
         <tr th:each="a : ${airports}">
-            <td th:text="${a.iataCode()}">—</td>
-            <td th:text="${a.icaoCode()}">—</td>
-            <td th:text="${a.name()}">—</td>
-            <td th:text="${a.municipality()}">—</td>
-            <td th:text="${a.isoCountry()}">—</td>
-            <td th:text="${a.airportType() != null ? a.airportType().name() : ''}">—</td>
+            <td th:text="${a.iataCode()} ?: '—'">—</td>
+            <td th:text="${a.icaoCode()} ?: '—'">—</td>
+            <td th:text="${a.name()} ?: '—'">—</td>
+            <td th:text="${a.municipality()} ?: '—'">—</td>
+            <td th:text="${a.isoCountry()} ?: '—'">—</td>
+            <td th:text="${a.airportType() != null ? a.airportType().name() : '—'}">—</td>
         </tr>
         </tbody>
     </table>
 
     <nav class="pager" th:if="${page.totalPages() > 1}">
         <a th:if="${page.page() > 0}"
-           th:href="@{/airports(name=${filterName},isoCountry=${filterCountry},page=${page.page()-1},size=${page.size()})}">‹ Prec</a>
+           th:href="@{/airports(name=${filterName},isoCountry=${filterCountry},page=${page.page()-1},size=${page.size()})}">
+            <span th:text="'‹ ' + #{common.prev}">‹ Prec</span></a>
         <span th:text="${page.page()+1} + ' / ' + ${page.totalPages()}">1 / 1</span>
         <a th:if="${page.page()+1 < page.totalPages()}"
-           th:href="@{/airports(name=${filterName},isoCountry=${filterCountry},page=${page.page()+1},size=${page.size()})}">Succ ›</a>
+           th:href="@{/airports(name=${filterName},isoCountry=${filterCountry},page=${page.page()+1},size=${page.size()})}">
+            <span th:text="#{common.next} + ' ›'">Succ ›</span></a>
     </nav>
 </main>
 

@@ -6,10 +6,21 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 /** Distingue errori di connessione (API giù) da errori applicativi (4xx). */
 @ControllerAdvice
 public class GlobalErrorHandler {
+
+    /** File caricato troppo grande: risposta chiara invece di connessione chiusa. */
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public String uploadTooLarge(MaxUploadSizeExceededException ex, Model model) {
+        model.addAttribute("title", "File troppo grande");
+        model.addAttribute("message",
+                "Il file supera la dimensione massima consentita per l'upload. "
+                + "Riduci il file oppure usa il servizio di archivio EDIFACT dedicato per i file di grandi dimensioni.");
+        return "error-api";
+    }
 
     /** Solo problemi di rete/connessione: l'API non risponde. */
     @ExceptionHandler(ResourceAccessException.class)
