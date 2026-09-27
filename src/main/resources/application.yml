@@ -1,0 +1,42 @@
+server:
+  port: ${SERVER_PORT:8082}
+  servlet:
+    context-path: /xtr-aeroport
+  shutdown: graceful
+  compression:
+    enabled: true
+
+spring:
+  application:
+    name: xtr-aeroport-web-java
+  main:
+    banner-mode: "off"
+  threads:
+    virtual:
+      enabled: true
+  thymeleaf:
+    cache: true          # produzione: cache attiva
+  jmx:
+    enabled: false
+
+# Endpoint dell'API interna (ClusterIP nel cluster; localhost in locale)
+aeroport:
+  api:
+    base-url: ${AEROPORT_API_BASE_URL:http://localhost:8080/xtr-aeroport-api}
+    connect-timeout-ms: ${AEROPORT_API_CONNECT_TIMEOUT_MS:2000}
+    read-timeout-ms: ${AEROPORT_API_READ_TIMEOUT_MS:5000}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+logging:
+  level:
+    root: WARN
+    com.xtremealex: INFO

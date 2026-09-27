@@ -1,0 +1,25 @@
+:root { --bg:#0f1115; --fg:#e8e8e8; --acc:#ffcc00; --line:#2a2d34; }
+* { box-sizing: border-box; }
+body { margin:0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+       background:var(--bg); color:var(--fg); }
+.site-header { border-bottom:1px solid var(--line); }
+.nav { display:flex; gap:1.2rem; align-items:center; padding:.8rem 1.2rem; }
+.nav a { color:var(--fg); text-decoration:none; }
+.nav a:hover { color:var(--acc); }
+.brand { font-weight:700; color:var(--acc); }
+.container { max-width:1000px; margin:0 auto; padding:1.5rem 1.2rem; }
+h1 { font-size:1.4rem; }
+.filters { display:flex; gap:.6rem; margin:1rem 0; flex-wrap:wrap; }
+.filters input { padding:.5rem .7rem; background:#1a1d24; border:1px solid var(--line);
+                 color:var(--fg); border-radius:6px; }
+.filters button { padding:.5rem 1rem; background:var(--acc); border:0; border-radius:6px;
+                  font-weight:600; cursor:pointer; }
+.grid { width:100%; border-collapse:collapse; font-size:.92rem; }
+.grid th, .grid td { text-align:left; padding:.55rem .6rem; border-bottom:1px solid var(--line); }
+.grid th { color:var(--acc); font-weight:600; }
+.flag { width:20px; height:auto; vertical-align:middle; margin-right:.35rem; }
+.empty { color:#8a8f98; text-align:center; padding:1.5rem; }
+.pager { display:flex; gap:1rem; align-items:center; justify-content:center; margin-top:1.2rem; }
+.pager a { color:var(--acc); text-decoration:none; }
+.site-footer { border-top:1px solid var(--line); text-align:center; padding:1rem;
+               color:#8a8f98; font-size:.85rem; }

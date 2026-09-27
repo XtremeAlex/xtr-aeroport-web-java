@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="it">
+<head th:fragment="head(pageTitle)">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${pageTitle} ?: 'Aeroport'">Aeroport</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+
+<header th:fragment="header" class="site-header">
+    <nav class="nav">
+        <a class="brand" th:href="@{/}">✈ Aeroport</a>
+        <a th:href="@{/}">Aeroporti</a>
+        <a th:href="@{/countries}">Paesi</a>
+    </nav>
+</header>
+
+<footer th:fragment="footer" class="site-footer">
+    <p>Suite Aeroport · frontend</p>
+</footer>
+
+</body>
+</html>
