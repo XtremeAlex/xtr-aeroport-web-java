@@ -26,8 +26,12 @@ public class EdifactController {
      *  decine di migliaia di righe). L'archivio EDIFACT dedicato resta la via per i big file. */
     private static final int MAX_FLIGHTS_SHOWN = 200;
     private static final int MAX_INSPECT_SHOWN = 50;
-    /** Soglia oltre cui suggerire l'archivio invece della vista sincrona (~2MB). */
+    /** Soglia oltre cui avvisare che è preferibile l'archivio (~2MB). */
     private static final int LARGE_INPUT_BYTES = 2 * 1024 * 1024;
+    /** HARD STOP della vista sincrona: oltre questa dimensione NON si chiama l'API
+     *  (il decode in-memory di file enormi la manderebbe in OutOfMemory). Si invita
+     *  all'archivio EDIFACT, che processa a lotti in streaming. */
+    private static final int MAX_SYNC_INPUT_BYTES = 5 * 1024 * 1024;
 
     public EdifactController(AeroportApi api) {
         this.api = api;
@@ -56,8 +60,19 @@ public class EdifactController {
             return "edifact";
         }
 
-        // avviso "file grande": la vista sincrona non è adatta ai log enormi
         int inputBytes = content.length();
+
+        // HARD STOP: file troppo grande per la vista sincrona. Non chiamiamo l'API
+        // (la proteggiamo dall'OutOfMemory): mostriamo l'invito all'archivio.
+        if (inputBytes > MAX_SYNC_INPUT_BYTES) {
+            model.addAttribute("tooBigForSync", true);
+            model.addAttribute("largeInput", true);
+            model.addAttribute("flights", List.of());
+            model.addAttribute("inspect", List.of());
+            return "edifact";
+        }
+
+        // avviso "file grande": la vista sincrona resta ma suggeriamo l'archivio
         model.addAttribute("largeInput", inputBytes > LARGE_INPUT_BYTES);
 
         // UNA sola chiamata all'API: decode + inspect in una passata (niente doppio parsing).
