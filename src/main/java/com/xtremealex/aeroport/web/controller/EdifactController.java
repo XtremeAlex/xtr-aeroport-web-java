@@ -48,6 +48,9 @@ public class EdifactController {
         model.addAttribute("results", results);
         // aggregazione per volo (numero volo) preservando l'ordine di arrivo
         model.addAttribute("flights", EdifactAggregator.groupByFlight(results));
+        // ispettore ad albero (segmenti/elementi) stile EDI inspector
+        model.addAttribute("inspect", (content == null || content.isBlank())
+                ? List.of() : api.inspectEdifact(content));
         return "edifact";
     }
 

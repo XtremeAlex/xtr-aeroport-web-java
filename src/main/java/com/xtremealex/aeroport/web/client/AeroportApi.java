@@ -4,6 +4,7 @@ import com.xtremealex.aeroport.web.client.dto.AirportTypeView;
 import com.xtremealex.aeroport.web.client.dto.AirportView;
 import com.xtremealex.aeroport.web.client.dto.CountryView;
 import com.xtremealex.aeroport.web.client.dto.DecodeResultView;
+import com.xtremealex.aeroport.web.client.dto.InspectResultView;
 import com.xtremealex.aeroport.web.client.dto.PageResponse;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -37,6 +38,10 @@ public interface AeroportApi {
     /** Decodifica un messaggio EDIFACT (text/plain) -> lista di risultati con validazione. */
     @PostExchange(url = "/edifact/decode", contentType = "text/plain")
     List<DecodeResultView> decodeEdifact(@RequestBody String raw);
+
+    /** Ispezione: albero segmenti/elementi + diagnostica. */
+    @PostExchange(url = "/edifact/inspect", contentType = "text/plain")
+    List<InspectResultView> inspectEdifact(@RequestBody String raw);
 
     /** Compila un messaggio EDIFACT PAXLST a partire dal modello di dominio (mappa JSON). */
     @PostExchange(url = "/edifact/encode", contentType = "application/json", accept = "text/plain")

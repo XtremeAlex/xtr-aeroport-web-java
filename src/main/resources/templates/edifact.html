@@ -81,6 +81,48 @@
         </div>
     </section>
 
+    <!-- ISPETTORE EDI: albero segmenti/elementi + delimitatori + log console -->
+    <section th:if="${inspect != null and !inspect.isEmpty()}" class="inspector">
+        <h2>Ispettore EDI</h2>
+        <div th:each="ins,iw : ${inspect}" class="ins-msg">
+            <div class="ins-bar" th:classappend="${ins.valid()} ? 'ok' : 'ko'">
+                <span th:text="'Messaggio ' + (${iw.index}+1)">Messaggio 1</span>
+                <span th:if="${ins.messageId()}" class="mono" th:text="${ins.messageId()}"></span>
+                <span th:if="${ins.receivedAt()}" th:text="${ins.receivedAt()}"></span>
+                <span class="delims" th:if="${ins.delimiters()}"
+                      th:text="'delim: el[' + ${ins.delimiters().element()} + '] comp[' + ${ins.delimiters().component()} + '] term[' + ${ins.delimiters().segment()} + '] rel[' + ${ins.delimiters().release()} + ']'"></span>
+            </div>
+
+            <!-- albero segmenti -->
+            <div class="tree">
+                <details th:each="seg : ${ins.segments()}" th:open="${!seg.known()}">
+                    <summary th:classappend="${seg.known()} ? '' : 'orphan'">
+                        <span class="seg-tag" th:text="${seg.tag()}">TAG</span>
+                        <span class="seg-desc" th:if="${seg.known()}" th:text="${seg.description()}">desc</span>
+                        <span class="seg-desc" th:unless="${seg.known()}">segmento non previsto dallo schema</span>
+                        <span class="seg-usage" th:if="${seg.usage()}" th:text="${seg.usage()}">R</span>
+                    </summary>
+                    <div class="elements">
+                        <div class="el" th:each="el : ${seg.elements()}">
+                            <span class="el-pos" th:text="'#' + ${el.position()}">#0</span>
+                            <span class="el-comp" th:each="c : ${el.components()}" th:text="${c}">val</span>
+                        </div>
+                    </div>
+                </details>
+            </div>
+
+            <!-- log console -->
+            <div class="log-console" th:if="${!ins.issues().isEmpty()}">
+                <div class="log-line" th:each="i : ${ins.issues()}" th:classappend="${i.severity()}">
+                    <span class="lvl" th:text="${i.severity()}">INFO</span>
+                    <span class="code" th:text="${i.code()}">CODE</span>
+                    <span class="msg" th:text="${i.message()}">msg</span>
+                    <span class="tag" th:if="${i.segmentTag()}" th:text="'@' + ${i.segmentTag()}"></span>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- MESSAGGI RICEVUTI (ordinati per timestamp) -->
     <section th:if="${results != null and !results.isEmpty()}" class="edi-messages">
         <h2>Messaggi ricevuti <span th:text="'(' + ${results.size()} + ')'">(0)</span></h2>

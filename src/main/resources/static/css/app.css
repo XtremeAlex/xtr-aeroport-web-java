@@ -81,3 +81,34 @@ h1 { font-size:1.4rem; }
 .issues li.ERROR { color:#f87171; }
 .issues li.WARNING { color:#fbbf24; }
 .issues li.INFO { color:#60a5fa; }
+
+
+/* ===== Ispettore EDI (albero + log console) ===== */
+.inspector { margin-top:1.5rem; }
+.ins-msg { border:1px solid var(--line); border-radius:8px; margin-bottom:1rem; overflow:hidden; }
+.ins-bar { display:flex; flex-wrap:wrap; gap:1rem; align-items:center; padding:.5rem .8rem;
+           font-family:'Courier New',monospace; font-size:.8rem; }
+.ins-bar.ok { background:#0d2a12; color:#4ade80; }
+.ins-bar.ko { background:#2a0d0d; color:#f87171; }
+.ins-bar .delims { margin-left:auto; color:#8a8f98; }
+.tree { padding:.5rem .8rem; background:#0b0d11; }
+.tree details { border-left:2px solid #222; margin:.15rem 0; padding-left:.5rem; }
+.tree summary { cursor:pointer; padding:.3rem 0; font-family:'Courier New',monospace; font-size:.85rem;
+                display:flex; gap:.6rem; align-items:baseline; }
+.tree summary.orphan { color:#fbbf24; }
+.seg-tag { color:var(--acc); font-weight:700; min-width:3.5em; }
+.seg-desc { color:#9aa; font-size:.8rem; }
+.seg-usage { margin-left:auto; font-size:.7rem; color:#60a5fa; border:1px solid #234; border-radius:3px; padding:0 .3rem; }
+.elements { padding:.2rem 0 .4rem 1.5rem; }
+.el { display:flex; gap:.4rem; flex-wrap:wrap; padding:.15rem 0; font-family:'Courier New',monospace; font-size:.8rem; }
+.el-pos { color:#556; min-width:2.5em; }
+.el-comp { background:#141821; color:#d6ff6a; border:1px solid #222; border-radius:3px; padding:.05rem .4rem; }
+
+.log-console { background:#000; border-top:1px solid #1c1c1c; padding:.5rem .8rem; font-family:'Courier New',monospace; font-size:.78rem; }
+.log-line { display:flex; gap:.6rem; padding:.15rem 0; }
+.log-line .lvl { min-width:5em; font-weight:700; }
+.log-line .code { color:#8ab; min-width:12em; }
+.log-line.ERROR .lvl { color:#f87171; }
+.log-line.WARNING .lvl { color:#fbbf24; }
+.log-line.INFO .lvl { color:#60a5fa; }
+.log-line .tag { color:#667; }
