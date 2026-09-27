@@ -25,45 +25,59 @@ h1 { font-size:1.4rem; }
                color:#8a8f98; font-size:.85rem; }
 
 
+
 /* ===== EDIFACT · convertitore + tabellone aeroporto ===== */
 .edi-grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin:1rem 0; }
 @media (max-width:800px){ .edi-grid{ grid-template-columns:1fr; } }
 .edi-card { background:#1a1d24; border:1px solid var(--line); border-radius:8px; padding:1rem; }
 .edi-card h2 { margin-top:0; font-size:1rem; color:var(--acc); }
 .edi-input { width:100%; background:#0b0d11; color:#d6ff6a; border:1px solid var(--line);
-             border-radius:6px; padding:.6rem; font-family:'Courier New',monospace; font-size:.85rem; resize:vertical; }
+             border-radius:6px; padding:.6rem; font-family:'Courier New',monospace; font-size:.82rem; resize:vertical; }
+.edi-file { margin:.5rem 0; font-size:.8rem; color:#8a8f98; }
+.edi-file input { display:block; margin-top:.3rem; color:#d6ff6a; }
 .edi-output { margin-top:1rem; }
 .edi-code { background:#0b0d11; color:#d6ff6a; border:1px solid var(--line); border-radius:8px;
             padding:1rem; overflow:auto; font-family:'Courier New',monospace; white-space:pre-wrap; }
 
-.edi-status { text-align:center; font-weight:700; letter-spacing:2px; padding:.6rem; margin:1rem 0 .3rem;
-              border-radius:6px; font-family:'Courier New',monospace; }
-.edi-status.ok { background:#0d2a12; color:#4ade80; }
-.edi-status.ko { background:#2a0d0d; color:#f87171; }
-
-/* Tabellone split-flap */
-.board { background:#0a0a0a; border:2px solid #222; border-radius:8px; padding:.5rem;
-         margin-bottom:.8rem; overflow-x:auto; box-shadow:inset 0 0 30px rgba(0,0,0,.8); }
-.board-head, .board-row {
-    display:grid; grid-template-columns:repeat(5,1fr); gap:.4rem; align-items:center; }
+/* --- Tabellone partenze (split-flap) --- */
+.board-title { color:var(--acc); letter-spacing:3px; margin:1.5rem 0 .5rem; }
+.board-subtitle { color:#ffb000; letter-spacing:2px; font-size:.9rem; margin:1rem 0 .4rem; }
+.board { background:#0a0a0a; border:2px solid #1c1c1c; border-radius:8px; padding:.5rem;
+         margin-bottom:.8rem; overflow-x:auto; box-shadow:inset 0 0 40px rgba(0,0,0,.9); }
+.board-head, .board-row { display:grid; grid-template-columns:repeat(7,1fr); gap:.4rem; align-items:center; }
 .board-head.pax, .board-row.pax { grid-template-columns:repeat(8,1fr); }
-.board-head { color:#ffb000; font-family:'Courier New',monospace; font-size:.7rem;
-              letter-spacing:1px; padding:.3rem .2rem; border-bottom:1px solid #333; }
+.board-head { color:#ffb000; font-family:'Copperplate','Courier New',monospace; font-size:.7rem;
+              letter-spacing:2px; padding:.3rem .2rem; border-bottom:1px solid #2a2a2a; }
 .board-row { padding:.25rem .2rem; }
+.board-row:hover .flap { background:#00bcd4; color:#00131a;
+              transition:background-color .4s cubic-bezier(0,.68,.19,.13); }
 .flap {
-    background:linear-gradient(#1a1a1a 0 49%, #111 51% 100%);
-    color:#ffcf40; font-family:'Courier New',monospace; font-weight:700; font-size:.85rem;
-    text-align:center; padding:.5rem .2rem; border-radius:3px; border:1px solid #000;
-    box-shadow:0 1px 0 #333 inset, 0 -1px 0 #000 inset;
+    background:linear-gradient(#1c1c1c 0 49%, #0d0d0d 50% 100%);
+    color:#ffcf40; font-family:'Copperplate','Courier New',monospace; font-weight:700; font-size:.85rem;
+    text-align:center; padding:.55rem .25rem; border-radius:3px; border:1px solid #000;
+    box-shadow:0 1px 0 #2e2e2e inset, 0 -1px 0 #000 inset;
     text-transform:uppercase; letter-spacing:1px;
-    animation:flapin .4s ease; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;
+    overflow:hidden; white-space:nowrap; text-overflow:ellipsis;
+    transform-origin:center; animation:flapin .45s ease both;
 }
-@keyframes flapin { from{ transform:rotateX(-90deg); opacity:0; } to{ transform:rotateX(0); opacity:1; } }
+@keyframes flapin {
+    0%   { transform: rotateX(-90deg); opacity:0; }
+    60%  { transform: rotateX(15deg);  opacity:1; }
+    100% { transform: rotateX(0);      opacity:1; }
+}
 
-.edi-issues { margin-top:.6rem; }
-.edi-issues ul { list-style:none; padding:0; }
-.edi-issues li { font-family:'Courier New',monospace; font-size:.82rem; padding:.35rem .6rem;
-                 border-left:3px solid var(--line); margin-bottom:.25rem; background:#141414; }
-.edi-issues li.ERROR { border-left-color:#f87171; color:#fca5a5; }
-.edi-issues li.WARNING { border-left-color:#fbbf24; color:#fcd34d; }
-.edi-issues li.INFO { border-left-color:#60a5fa; color:#93c5fd; }
+/* --- Tabella messaggi ricevuti --- */
+.edi-messages { margin-top:1.5rem; }
+.msg-table { width:100%; border-collapse:collapse; font-size:.82rem;
+             font-family:'Copperplate','Courier New',monospace; }
+.msg-table th { background:#111; color:#ffb000; text-align:left; padding:.5rem;
+                position:sticky; top:0; letter-spacing:1px; }
+.msg-table td { padding:.5rem; border-bottom:1px solid #1c1c1c; background:#000000d1; color:#fff70f;
+                vertical-align:top; }
+.msg-table tr.ko td { color:#fca5a5; }
+.msg-table .mono { font-family:'Courier New',monospace; font-size:.72rem; color:#9aa; }
+.issues { list-style:none; padding:0; margin:0; }
+.issues li { font-size:.75rem; padding:.15rem 0; }
+.issues li.ERROR { color:#f87171; }
+.issues li.WARNING { color:#fbbf24; }
+.issues li.INFO { color:#60a5fa; }

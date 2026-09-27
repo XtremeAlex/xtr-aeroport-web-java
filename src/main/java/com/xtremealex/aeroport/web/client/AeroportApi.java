@@ -38,7 +38,7 @@ public interface AeroportApi {
     @PostExchange(url = "/edifact/decode", contentType = "text/plain")
     List<DecodeResultView> decodeEdifact(@RequestBody String raw);
 
-    /** Compila un messaggio EDIFACT PAXLST a partire dal JSON di dominio. */
+    /** Compila un messaggio EDIFACT PAXLST a partire dal modello di dominio (mappa JSON). */
     @PostExchange(url = "/edifact/encode", contentType = "application/json", accept = "text/plain")
-    String encodeEdifact(@RequestBody String paxlstJson);
+    String encodeEdifact(@RequestBody java.util.Map<String, Object> paxlst);
 }

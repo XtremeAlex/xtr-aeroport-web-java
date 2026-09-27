@@ -5,7 +5,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record DecodeResultView(PaxlstView message, List<IssueView> issues, boolean valid) {
+public record DecodeResultView(String receivedAt, String messageId,
+                               PaxlstView message, List<IssueView> issues, boolean valid) {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record PaxlstView(
