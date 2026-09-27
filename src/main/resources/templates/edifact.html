@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}" lang="it">
-<head th:replace="~{fragments/layout :: head(#{edifact.title})}"></head>
+<head th:replace="~{fragments/layout :: head(#{seo.edifact.title}, #{seo.edifact.desc})}"></head>
 <body>
 <header th:replace="~{fragments/layout :: header}"></header>
 
@@ -79,95 +79,117 @@
             </a>
         </div>
 
-        <!-- passeggeri del volo selezionato -->
-        <template th:each="f,it : ${flights}">
-            <div th:attr="x-show=('open === \'' + ${it.index} + '\'')" style="margin-top:1.5rem" x-cloak>
+        <!-- DETTAGLIO del volo selezionato: messaggi come "fogli strappati" -->
+        <th:block th:each="f,it : ${flights}">
+            <div th:attr="x-show=('open === \'' + ${it.index} + '\'')" style="margin-top:1.5rem"
+                 x-cloak x-data="{ sheet: 0 }">
                 <h2>
-                    <span th:text="#{edifact.flights.title} + ' · ' + (${f.flightNumber()} ?: '—')">Passeggeri</span>
+                    <span th:text="(${f.departureAirport()} ?: '???') + ' → ' + (${f.arrivalAirport()} ?: '???') + ' · ' + (${f.flightNumber()} ?: '—')">Dettaglio volo</span>
                     <span th:if="${f.flagged()}" class="pax-warn" role="img"
                           th:title="#{edifact.pax.errorTitle}"
                           th:attr="aria-label=#{edifact.pax.errorTitle}">&#9888;</span>
                 </h2>
-
-                <!-- pannello anomalie del volo (issue a livello di messaggio) -->
-                <div th:if="${f.flagged() and !#lists.isEmpty(f.issues())}" class="log-console" style="margin-bottom:1rem">
-                    <div class="log-line" th:each="i : ${f.issues()}" th:classappend="${i.severity()}">
-                        <span class="lvl" th:text="${i.severity()}">INFO</span>
-                        <span class="code" th:text="${i.code()}">CODE</span>
-                        <span th:if="${i.segmentTag()}" class="code" th:text="${i.segmentTag()}">SEG</span>
-                        <span th:text="${i.message()}">msg</span>
-                    </div>
+                <div class="fc-meta" style="margin-bottom:1rem">
+                    <span th:if="${f.departureDateTime()}" th:text="${f.departureDateTime()}"></span>
+                    <span th:if="${f.carrier()}" th:text="'· ' + ${f.carrier()}"></span>
+                    <span th:if="${f.hasAircraftType()}" class="badge"
+                          th:text="#{edifact.aircraft} + ' ' + ${f.aircraftType()}">Aeromobile</span>
+                    <span class="badge pax" th:text="${f.passengers().size()} + ' ' + #{edifact.flights.pax}">0 PAX</span>
+                    <span class="badge" th:text="${f.messageCount()} + ' ' + #{edifact.flights.msg}">1 MSG</span>
                 </div>
 
-                <table class="grid">
-                    <thead>
-                    <tr>
-                        <th th:text="#{edifact.pax.col.type}">Tipo</th>
-                        <th th:text="#{edifact.pax.col.surname}">Cognome</th>
-                        <th th:text="#{edifact.pax.col.given}">Nome</th>
-                        <th th:text="#{edifact.pax.col.gender}">Sesso</th>
-                        <th th:text="#{edifact.pax.col.nationality}">Naz.</th>
-                        <th th:text="#{edifact.pax.col.birth}">Nascita</th>
-                        <th th:text="#{edifact.pax.col.doc}">Doc</th>
-                        <th th:text="#{edifact.pax.col.docnum}">Numero</th>
-                        <th th:text="#{edifact.pax.col.pnr}">PNR</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr th:each="p : ${f.passengers()}" th:classappend="${f.flagged()} ? 'row-flagged'">
-                        <td th:text="${p.type()} ?: '—'">FL</td>
-                        <td th:text="${p.surname()} ?: '—'">—</td>
-                        <td th:text="${p.givenName()} ?: '—'">—</td>
-                        <td th:text="${p.gender()} ?: '—'">—</td>
-                        <td th:text="${p.nationality()} ?: '—'">—</td>
-                        <td th:text="${p.birthDate()} ?: '—'">—</td>
-                        <td th:text="${p.primaryDocument() != null ? p.primaryDocument().type() : '—'}">—</td>
-                        <td th:text="${p.primaryDocument() != null ? p.primaryDocument().number() : '—'}">—</td>
-                        <td th:text="${p.pnr()} ?: '—'">—</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-        </template>
-    </section>
+                <!-- SCHEDE MESSAGGIO ("fogli"): mostrate solo se il volo ha più messaggi.
+                     Cliccando una scheda si vedono SOLO i passeggeri di quel messaggio. -->
+                <div th:if="${f.hasMultipleMessages()}" class="sheet-tabs">
+                    <button type="button" th:each="msg,mi : ${f.messages()}"
+                            class="sheet-tab" th:classappend="${msg.flagged()} ? ' is-flagged'"
+                            th:attr="data-sheet=${mi.index}"
+                            x-bind:class="{ 'active': sheet === $el.dataset.sheet*1 }"
+                            x-on:click="sheet = $el.dataset.sheet*1">
+                        <span class="sheet-tab__no" th:text="'#' + (${mi.index}+1)">#1</span>
+                        <span class="sheet-tab__meta" th:text="${msg.receivedAt()} ?: (${msg.messageId()} ?: '—')">msg</span>
+                        <span class="sheet-tab__pax" th:text="${msg.passengers().size()} + ' PAX'">0 PAX</span>
+                        <span th:if="${msg.flagged()}" class="pax-warn" aria-hidden="true">&#9888;</span>
+                    </button>
+                </div>
 
-    <!-- ISPETTORE (albero segmenti) -->
-    <section th:if="${inspect != null and !#lists.isEmpty(inspect)}" class="inspector">
-        <h2 th:text="#{edifact.inspector.title}">Ispettore</h2>
-        <p th:if="${inspectTruncated}" class="empty" style="color:var(--warn)"
-           th:text="#{edifact.truncated.inspect(${inspect.size()}, ${totalInspect})}">limitato</p>
-        <div th:each="ins,iw : ${inspect}" class="ins-msg">
-            <div class="ins-bar" th:classappend="${ins.valid()} ? 'ok' : 'ko'">
-                <span th:text="'#' + (${iw.index}+1)">Messaggio 1</span>
-                <span class="mono" th:if="${ins.messageId()}" th:text="${ins.messageId()}"></span>
-                <span th:if="${ins.receivedAt()}" th:text="${ins.receivedAt()}"></span>
-                <span class="delims" th:if="${ins.delimiters()}"
-                      th:text="'el[' + ${ins.delimiters().element()} + '] term[' + ${ins.delimiters().segment()} + ']'"></span>
-            </div>
-            <div class="tree">
-                <details th:each="seg : ${ins.segments()}">
-                    <summary th:classappend="${seg.known()} ? '' : 'orphan'">
-                        <span class="seg-tag" th:text="${seg.tag()}">TAG</span>
-                        <span class="seg-desc" th:if="${seg.known()}" th:text="${seg.description()}">desc</span>
-                        <span class="seg-desc" th:unless="${seg.known()}" th:text="#{edifact.notAvailable}">non previsto</span>
-                        <span class="seg-usage" th:if="${seg.usage()}" th:text="${seg.usage()}">R</span>
-                    </summary>
-                    <div class="elements">
-                        <div class="el" th:each="el : ${seg.elements()}">
-                            <span class="el-pos" th:text="'#' + ${el.position()}">#0</span>
-                            <span class="el-comp" th:each="c : ${el.components()}" th:text="${c}">val</span>
+                <!-- Contenuto di ogni "foglio": passeggeri + ispettore del singolo messaggio -->
+                <th:block th:each="msg,mi : ${f.messages()}">
+                    <div th:attr="x-show=${f.hasMultipleMessages()} ? ('sheet === ' + ${mi.index}) : 'true'">
+
+                        <!-- anomalie del singolo messaggio -->
+                        <div th:if="${msg.flagged() and !#lists.isEmpty(msg.issues())}" class="log-console" style="margin-bottom:1rem">
+                            <div class="log-line" th:each="i : ${msg.issues()}" th:classappend="${i.severity()}">
+                                <span class="lvl" th:text="${i.severity()}">INFO</span>
+                                <span class="code" th:text="${i.code()}">CODE</span>
+                                <span th:if="${i.segmentTag()}" class="code" th:text="${i.segmentTag()}">SEG</span>
+                                <span th:text="${i.message()}">msg</span>
+                            </div>
                         </div>
+
+                        <!-- tabella passeggeri del messaggio -->
+                        <table class="grid">
+                            <thead>
+                            <tr>
+                                <th th:text="#{edifact.pax.col.type}">Tipo</th>
+                                <th th:text="#{edifact.pax.col.surname}">Cognome</th>
+                                <th th:text="#{edifact.pax.col.given}">Nome</th>
+                                <th th:text="#{edifact.pax.col.gender}">Sesso</th>
+                                <th th:text="#{edifact.pax.col.nationality}">Naz.</th>
+                                <th th:text="#{edifact.pax.col.birth}">Nascita</th>
+                                <th th:text="#{edifact.pax.col.doc}">Doc</th>
+                                <th th:text="#{edifact.pax.col.docnum}">Numero</th>
+                                <th th:text="#{edifact.pax.col.docexp}">Scad.</th>
+                                <th th:text="#{edifact.pax.col.doccountry}">Paese doc</th>
+                                <th th:text="#{edifact.pax.col.pnr}">PNR</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="p : ${msg.passengers()}">
+                                <td th:text="${p.type()} ?: '—'">FL</td>
+                                <td th:text="${p.surname()} ?: '—'">—</td>
+                                <td th:text="${p.givenName()} ?: '—'">—</td>
+                                <td th:text="${p.gender()} ?: '—'">—</td>
+                                <td th:text="${p.nationality()} ?: '—'">—</td>
+                                <td th:text="${p.birthDate()} ?: '—'">—</td>
+                                <td th:text="${p.primaryDocument() != null ? p.primaryDocument().type() : '—'}">—</td>
+                                <td th:text="${p.primaryDocument() != null ? p.primaryDocument().number() : '—'}">—</td>
+                                <td th:text="${p.primaryDocument() != null ? (p.primaryDocument().expiry() ?: '—') : '—'}">—</td>
+                                <td th:text="${p.primaryDocument() != null ? (p.primaryDocument().issuingCountry() ?: '—') : '—'}">—</td>
+                                <td th:text="${p.pnr()} ?: '—'">—</td>
+                            </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- ISPETTORE del singolo messaggio: dropdown (details) apribile -->
+                        <details th:if="${msg.hasInspect()}" class="msg-inspector">
+                            <summary>
+                                <span th:text="#{edifact.inspector.title}">Ispettore</span>
+                                <span class="mono" th:if="${msg.inspect().messageId()}" th:text="${msg.inspect().messageId()}"></span>
+                                <span class="ins-state" th:classappend="${msg.inspect().valid()} ? 'ok' : 'ko'"
+                                      th:text="${msg.inspect().valid()} ? 'OK' : 'KO'">OK</span>
+                            </summary>
+                            <div class="tree">
+                                <details th:each="seg : ${msg.inspect().segments()}">
+                                    <summary th:classappend="${seg.known()} ? '' : 'orphan'">
+                                        <span class="seg-tag" th:text="${seg.tag()}">TAG</span>
+                                        <span class="seg-desc" th:if="${seg.known()}" th:text="${seg.description()}">desc</span>
+                                        <span class="seg-desc" th:unless="${seg.known()}" th:text="#{edifact.notAvailable}">non previsto</span>
+                                        <span class="seg-usage" th:if="${seg.usage()}" th:text="${seg.usage()}">R</span>
+                                    </summary>
+                                    <div class="elements">
+                                        <div class="el" th:each="el : ${seg.elements()}">
+                                            <span class="el-pos" th:text="'#' + ${el.position()}">#0</span>
+                                            <span class="el-comp" th:each="c : ${el.components()}" th:text="${c}">val</span>
+                                        </div>
+                                    </div>
+                                </details>
+                            </div>
+                        </details>
                     </div>
-                </details>
+                </th:block>
             </div>
-            <div class="log-console" th:if="${!#lists.isEmpty(ins.issues())}">
-                <div class="log-line" th:each="i : ${ins.issues()}" th:classappend="${i.severity()}">
-                    <span class="lvl" th:text="${i.severity()}">INFO</span>
-                    <span class="code" th:text="${i.code()}">CODE</span>
-                    <span th:text="${i.message()}">msg</span>
-                </div>
-            </div>
-        </div>
+        </th:block>
     </section>
 
     <section th:if="${error}" class="card" style="border-color:var(--accent)">

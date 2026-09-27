@@ -1,0 +1,8 @@
+# Aeroport — EDIFACT PAXLST engine
+# Crawling consentito su tutte le landing pubbliche.
+User-agent: *
+Allow: /
+
+# La sitemap è servita dinamicamente dall'app (SitemapController).
+# Il dominio di produzione è fisso qui perché robots.txt è un file statico.
+Sitemap: https://aeroport.bubume.it/xtr-aeroport/sitemap.xml

@@ -35,7 +35,6 @@ public class EdifactController {
 
     @GetMapping("/edifact")
     public String page(Model model) {
-        model.addAttribute("title", "EDIFACT · Convertitore PAXLST");
         return "edifact";
     }
 
@@ -45,9 +44,10 @@ public class EdifactController {
                          Model model) throws IOException {
         String content = raw;
         if (file != null && !file.isEmpty()) {
-            content = new String(file.getBytes(), StandardCharsets.UTF_8);
+            // Legge lo stream direttamente in testo: evita la doppia allocazione
+            // byte[] (getBytes) + String, che su heap piccolo causava OutOfMemoryError.
+            content = new String(file.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
         }
-        model.addAttribute("title", "EDIFACT · Decodifica");
         model.addAttribute("rawInput", raw);
 
         if (content == null || content.isBlank()) {
@@ -57,13 +57,14 @@ public class EdifactController {
         }
 
         // avviso "file grande": la vista sincrona non è adatta ai log enormi
-        int inputBytes = content.getBytes(StandardCharsets.UTF_8).length;
+        int inputBytes = content.length();
         model.addAttribute("largeInput", inputBytes > LARGE_INPUT_BYTES);
 
         // UNA sola chiamata all'API: decode + inspect in una passata (niente doppio parsing).
         var analysis = api.analyzeEdifact(content);
-        var allFlights = EdifactAggregator.groupByFlight(analysis.decodedOrEmpty());
         var allInspect = analysis.inspectedOrEmpty();
+        // aggrega per volo, correlando ogni messaggio col suo ispettore (per messageId/ordine)
+        var allFlights = EdifactAggregator.groupByFlight(analysis.decodedOrEmpty(), allInspect);
 
         // CAP di rendering: mostriamo un sottoinsieme, comunicando il totale.
         int totalFlights = allFlights.size();
@@ -85,7 +86,6 @@ public class EdifactController {
 
     @PostMapping("/edifact/encode")
     public String encode(@RequestParam("json") String json, Model model) throws IOException {
-        model.addAttribute("title", "EDIFACT · Compilazione");
         model.addAttribute("jsonInput", json);
         Map<String, Object> payload = objectMapper.readValue(json, new TypeReference<>() {});
         model.addAttribute("encoded", api.encodeEdifact(payload));

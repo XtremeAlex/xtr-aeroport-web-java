@@ -24,7 +24,6 @@ public class EdifactCreateController {
 
     @GetMapping("/edifact/new")
     public String form(Model model) {
-        model.addAttribute("title", "Crea EDIFACT · PAXLST");
         return "edifact-new";
     }
 
@@ -67,7 +66,6 @@ public class EdifactCreateController {
         }
         msg.put("passengers", passengers);
 
-        model.addAttribute("title", "Crea EDIFACT · PAXLST");
         model.addAttribute("encoded", api.encodeEdifact(msg));
         model.addAttribute("submitted", msg);
         return "edifact-new";

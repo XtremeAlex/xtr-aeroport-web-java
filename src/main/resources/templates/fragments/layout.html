@@ -5,12 +5,36 @@
   Il tema (chiaro/scuro) è una preferenza tecnica salvata in localStorage;
   la lingua (it/en) è gestita da Spring via cookie XTR_LANG e parametro ?lang.
 -->
-<head th:fragment="head(pageTitle)">
+<head th:fragment="head(pageTitle, pageDesc)">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" th:content="#{home.hero.subtitle}" content="">
     <meta name="color-scheme" content="dark light">
-    <title th:text="${pageTitle} ?: #{home.title}">Aeroport</title>
+    <meta name="robots" content="index,follow">
+    <meta name="author" content="Andrei Alexandru Dabija (XtremeAlex)">
+
+    <title th:text="${pageTitle} ?: #{seo.home.title}">Aeroport</title>
+    <meta name="description" th:content="${pageDesc} ?: #{seo.home.desc}" content="">
+
+    <!-- Canonical assoluto (dominio pubblico configurabile, senza ?lang) -->
+    <link rel="canonical" th:href="${canonicalUrl}">
+    <!-- Alternate hreflang: stessa pagina nelle due lingue + x-default -->
+    <link rel="alternate" hreflang="it" th:href="${urlIt}">
+    <link rel="alternate" hreflang="en" th:href="${urlEn}">
+    <link rel="alternate" hreflang="x-default" th:href="${canonicalUrl}">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Aeroport">
+    <meta property="og:title" th:content="${pageTitle} ?: #{seo.home.title}">
+    <meta property="og:description" th:content="${pageDesc} ?: #{seo.home.desc}">
+    <meta property="og:url" th:content="${canonicalUrl}">
+    <meta property="og:locale" th:content="${ogLocale}">
+    <meta property="og:locale:alternate" th:content="${ogLocaleAlt}">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" th:content="${pageTitle} ?: #{seo.home.title}">
+    <meta name="twitter:description" th:content="${pageDesc} ?: #{seo.home.desc}">
 
     <!--
       Anti-FOUC: applica il tema prima del primo paint per evitare il lampo di colore.
@@ -35,8 +59,26 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/app.css}">
+
+    <!--
+      Structured data (schema.org): descrive il prodotto come SoftwareApplication
+      gratuito/open source. Nessun rating o recensione inventati. L'autore è modellato
+      come Person collegata al sito personale. Il JSON è costruito server-side
+      (LayoutModelAdvice) e stampato con th:utext per evitare problemi di parsing
+      dei blocchi <script> in Thymeleaf 3.1.
+    -->
+    <script type="application/ld+json" th:utext="${jsonLdApp}"></script>
 </head>
 <body>
+
+<!--
+  JSON-LD aggiuntivo per la sola home: WebSite + Organization.
+  Richiamato da home.html con th:replace. Costruito server-side (LayoutModelAdvice)
+  e stampato con th:utext.
+-->
+<th:block th:fragment="homeJsonLd">
+    <script type="application/ld+json" th:utext="${jsonLdHome}"></script>
+</th:block>
 
 <header th:fragment="header" class="site-header">
     <nav class="nav">

@@ -30,6 +30,10 @@ spring:
 
 # Endpoint dell'API interna (ClusterIP nel cluster; localhost in locale)
 aeroport:
+  web:
+    # Dominio pubblico di produzione: usato per canonical, hreflang, Open Graph e sitemap.
+    # Sovrascrivibile via AEROPORT_PUBLIC_BASE_URL (NON include il context-path).
+    public-base-url: ${AEROPORT_PUBLIC_BASE_URL:https://aeroport.bubume.it}
   api:
     base-url: ${AEROPORT_API_BASE_URL:http://localhost:8080/xtr-aeroport-api}
     connect-timeout-ms: ${AEROPORT_API_CONNECT_TIMEOUT_MS:2000}

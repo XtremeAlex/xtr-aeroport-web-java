@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}" lang="it">
-<head th:replace="~{fragments/layout :: head(${title})}"></head>
+<head th:replace="~{fragments/layout :: head(${title} ?: #{seo.error.title}, #{seo.error.desc})}"></head>
 <body>
 <header th:replace="~{fragments/layout :: header}"></header>
 <main class="container">

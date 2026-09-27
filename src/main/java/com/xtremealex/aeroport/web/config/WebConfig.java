@@ -1,5 +1,6 @@
 package com.xtremealex.aeroport.web.config;
 
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.LocaleResolver;
@@ -21,6 +22,7 @@ import java.util.Locale;
  * supportate, altrimenti IT.
  */
 @Configuration
+@EnableConfigurationProperties(WebProperties.class)
 public class WebConfig implements WebMvcConfigurer {
 
     private static final Locale IT = Locale.of("it");

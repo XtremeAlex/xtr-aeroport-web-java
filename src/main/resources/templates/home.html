@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}" lang="it">
-<head th:replace="~{fragments/layout :: head(#{home.title})}"></head>
+<head th:replace="~{fragments/layout :: head(#{seo.home.title}, #{seo.home.desc})}"></head>
 <body>
 <header th:replace="~{fragments/layout :: header}"></header>
 
@@ -102,5 +102,6 @@
 </main>
 
 <footer th:replace="~{fragments/layout :: footer}"></footer>
+<th:block th:replace="~{fragments/layout :: homeJsonLd}"></th:block>
 </body>
 </html>

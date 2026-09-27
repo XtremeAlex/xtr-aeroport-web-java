@@ -22,7 +22,6 @@ public class CountryController {
         var result = api.countries(page, size);
         model.addAttribute("countries", result.contentOrEmpty());
         model.addAttribute("page", result);
-        model.addAttribute("title", "Paesi");
         return "countries";
     }
 }
