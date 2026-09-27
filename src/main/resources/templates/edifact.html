@@ -16,25 +16,28 @@
 
     <div class="card">
         <form method="post" th:action="@{/edifact/decode}" enctype="multipart/form-data"
-              x-data="{ loading: false, fileName: '' }"
-              x-on:submit="loading = true">
+              x-data="{ loading: false, fileName: '', hasFile: false }"
+              x-on:submit="loading = hasFile">
             <label th:text="#{edifact.tab.decode}">Messaggio</label>
             <textarea name="raw" class="edi-input" th:text="${rawInput}"
                       th:placeholder="#{edifact.decode.placeholder}"></textarea>
             <div class="edi-file">
                 <label th:text="#{edifact.decode.file}">oppure carica un file</label>
                 <input type="file" name="file" accept=".log,.edi,.txt,.edf"
-                       x-on:change="fileName = $el.files.length ? $el.files[0].name : ''">
+                       x-on:change="hasFile = $el.files.length > 0; fileName = hasFile ? $el.files[0].name : ''">
             </div>
             <button type="submit" th:text="#{edifact.decode.submit}">Decodifica</button>
 
-            <!-- Overlay "terminale" durante l'elaborazione (stile bash) -->
-            <div class="proc-overlay" x-show="loading" x-cloak>
+            <!-- Overlay "terminale": mostrato SOLO quando si carica un FILE (elaborazione
+                 che può richiedere tempo), non per il testo incollato. Annullabile con la X. -->
+            <div class="proc-overlay" x-show="loading" x-cloak
+                 x-on:keydown.escape.window="loading = false">
                 <div class="proc-term" role="status" aria-live="polite">
-                    <div class="proc-term__bar" aria-hidden="true">
-                        <span class="proc-term__dot"></span>
-                        <span class="proc-term__dot"></span>
-                        <span class="proc-term__dot"></span>
+                    <div class="proc-term__bar">
+                        <button type="button" class="proc-term__close" x-on:click="loading = false; window.stop()"
+                                th:attr="aria-label=#{common.cancel}" title="Annulla">✕</button>
+                        <span class="proc-term__dot proc-term__dot--min" aria-hidden="true"></span>
+                        <span class="proc-term__dot proc-term__dot--max" aria-hidden="true"></span>
                         <span class="proc-term__title">edifact — decode</span>
                     </div>
                     <div class="proc-term__body">
@@ -45,6 +48,8 @@
                         <p class="proc-term__line proc-term__line--3" th:text="#{edifact.proc.validating}">validazione PAXLST…</p>
                         <p class="proc-term__cursor"><span class="proc-term__prompt">$</span> <span class="proc-term__blink">▋</span></p>
                     </div>
+                    <button type="button" class="btn btn--ghost proc-term__cancel" x-on:click="loading = false; window.stop()"
+                            th:text="#{common.cancel}">Annulla</button>
                 </div>
             </div>
         </form>

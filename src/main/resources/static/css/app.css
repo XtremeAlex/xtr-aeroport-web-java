@@ -407,6 +407,9 @@ html.light .theme-toggle .theme-toggle__moon { display: none; }
 
 
 /* ===== Overlay "terminale" durante l'elaborazione EDIFACT ===== */
+/* x-cloak: nasconde gli elementi Alpine finché il framework non è pronto.
+   Senza questa regola l'overlay sarebbe visibile al caricamento della pagina. */
+[x-cloak] { display: none !important; }
 .proc-overlay {
     position: fixed; inset: 0; z-index: 9999;
     background: rgba(10, 10, 10, .78); backdrop-filter: blur(4px);
@@ -422,12 +425,20 @@ html.light .theme-toggle .theme-toggle__moon { display: none; }
     padding: .6rem .9rem; background: var(--surface); border-bottom: 1px solid var(--border);
 }
 .proc-term__dot { width: 11px; height: 11px; border-radius: 50%; background: #444; }
-.proc-term__dot:nth-child(1) { background: #ff5f56; }
-.proc-term__dot:nth-child(2) { background: #ffbd2e; }
-.proc-term__dot:nth-child(3) { background: #27c93f; }
+.proc-term__dot--min { background: #ffbd2e; }
+.proc-term__dot--max { background: #27c93f; }
+/* Pallino rosso = pulsante di chiusura/annulla (X) */
+.proc-term__close {
+    width: 13px; height: 13px; border-radius: 50%; background: #ff5f56;
+    border: none; cursor: pointer; color: #7a0d06; font-size: 9px; line-height: 1;
+    display: inline-flex; align-items: center; justify-content: center; padding: 0;
+    transition: transform .1s;
+}
+.proc-term__close:hover { transform: scale(1.25); }
 .proc-term__title { margin-left: .6rem; font-size: .74rem; color: var(--text-muted); }
 .proc-term__body { padding: 1rem 1.1rem; font-size: .82rem; line-height: 1.8; color: var(--text); }
 .proc-term__prompt { color: var(--accent); font-weight: 700; }
+.proc-term__cancel { margin: 0 1.1rem 1rem; }
 .proc-term__line { color: var(--text-muted); opacity: 0; }
 /* le righe compaiono in sequenza (effetto "in esecuzione") */
 .proc-term__line { animation: procReveal .01s forwards; }
