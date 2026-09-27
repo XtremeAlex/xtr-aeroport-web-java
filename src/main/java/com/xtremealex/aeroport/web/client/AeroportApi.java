@@ -43,6 +43,10 @@ public interface AeroportApi {
     @PostExchange(url = "/edifact/inspect", contentType = "text/plain")
     List<InspectResultView> inspectEdifact(@RequestBody String raw);
 
+    /** Decode + inspect in UNA sola chiamata (una passata di parsing lato API). */
+    @PostExchange(url = "/edifact/analyze", contentType = "text/plain")
+    com.xtremealex.aeroport.web.client.dto.AnalyzeResultView analyzeEdifact(@RequestBody String raw);
+
     /** Compila un messaggio EDIFACT PAXLST a partire dal modello di dominio (mappa JSON). */
     @PostExchange(url = "/edifact/encode", contentType = "application/json", accept = "text/plain")
     String encodeEdifact(@RequestBody java.util.Map<String, Object> paxlst);

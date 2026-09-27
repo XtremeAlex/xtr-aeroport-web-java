@@ -29,15 +29,27 @@
 
     <!--
       NOTA DI MODELLO: lo standard EDIFACT/PAXLST NON trasporta il tipo di aeromobile
-      né il posto a sede assegnato al passeggero. Questi campi non esistono nei DTO
-      (PaxlstView / PassengerView) e non vengono mostrati come dati inventati: dove un
-      valore atteso manca, la vista mostra un placeholder discreto #{edifact.notAvailable}.
+      né il posto a sedere. Il tipo aeromobile è predisposto come arricchimento futuro
+      (FlightGroup.aircraftType, popolabile da una tabella aeromobili): mostrato solo se
+      disponibile, mai inventato. Il posto a sedere non è previsto nel formato PAXLST.
     -->
 
+    <!-- Avviso file grande: la vista sincrona mostra un estratto -->
+    <section th:if="${largeInput}" class="card" style="border-color:var(--warn);margin-top:1rem">
+        <strong th:text="#{edifact.largeInput.title}">File grande</strong>
+        <p th:text="#{edifact.largeInput.body}">estratto</p>
+        <a class="btn btn--ghost" href="http://localhost:8099/xtr-aeroport-edifact/" target="_blank"
+           rel="noopener noreferrer" th:text="#{edifact.largeInput.cta}">Archivio</a>
+    </section>
+
+    <!-- banner troncamento voli -->
+    <p th:if="${flightsTruncated}" class="empty" style="color:var(--warn)"
+       th:text="#{edifact.truncated.flights(${shownFlights}, ${totalFlights})}">Mostrati N di M</p>
+
     <!-- LISTA VOLI (card) con drill-down passeggeri via Alpine -->
-    <section th:if="${flights != null and !flights.isEmpty()}"
+    <section th:if="${flights != null and !#lists.isEmpty(flights)}"
              x-data="{ open: null }">
-        <h2 th:text="#{edifact.flights.title} + ' (' + ${flights.size()} + ')'">Voli</h2>
+        <h2 th:text="#{edifact.flights.title} + ' (' + ${totalFlights} + ')'">Voli</h2>
         <div class="flights">
             <a th:each="f,it : ${flights}" href="#" class="flight-card"
                th:classappend="${f.flagged()} ? ' is-flagged'"
@@ -56,6 +68,9 @@
                 <div class="fc-meta">
                     <span th:if="${f.departureDateTime()}" th:text="${f.departureDateTime()}"></span>
                     <span th:unless="${f.departureDateTime()}" class="na" th:text="#{edifact.notAvailable}"></span>
+                    <!-- tipo aeromobile: solo se arricchito da DB, altrimenti non mostrato -->
+                    <span th:if="${f.hasAircraftType()}" class="badge"
+                          th:text="#{edifact.aircraft} + ' ' + ${f.aircraftType()}">Aeromobile</span>
                     <span class="badge pax" th:text="${f.passengers().size()} + ' ' + #{edifact.flights.pax}">0 PAX</span>
                     <span class="badge" th:text="${f.messageCount()} + ' ' + #{edifact.flights.msg}">1 MSG</span>
                     <span th:if="${f.flagged()}" class="badge badge--warn"
@@ -75,7 +90,7 @@
                 </h2>
 
                 <!-- pannello anomalie del volo (issue a livello di messaggio) -->
-                <div th:if="${f.flagged() and !f.issues().isEmpty()}" class="log-console" style="margin-bottom:1rem">
+                <div th:if="${f.flagged() and !#lists.isEmpty(f.issues())}" class="log-console" style="margin-bottom:1rem">
                     <div class="log-line" th:each="i : ${f.issues()}" th:classappend="${i.severity()}">
                         <span class="lvl" th:text="${i.severity()}">INFO</span>
                         <span class="code" th:text="${i.code()}">CODE</span>
@@ -87,7 +102,6 @@
                 <table class="grid">
                     <thead>
                     <tr>
-                        <th></th>
                         <th th:text="#{edifact.pax.col.type}">Tipo</th>
                         <th th:text="#{edifact.pax.col.surname}">Cognome</th>
                         <th th:text="#{edifact.pax.col.given}">Nome</th>
@@ -101,13 +115,6 @@
                     </thead>
                     <tbody>
                     <tr th:each="p : ${f.passengers()}" th:classappend="${f.flagged()} ? 'row-flagged'">
-                        <td>
-                            <!-- se il volo ha anomalie, ogni passeggero del messaggio è segnalato:
-                                 lo standard non correla l'issue al singolo passeggero -->
-                            <span th:if="${f.flagged()}" class="pax-warn" role="img"
-                                  th:title="#{edifact.pax.errorTitle}"
-                                  th:attr="aria-label=#{edifact.pax.errorTitle}">&#9888;</span>
-                        </td>
                         <td th:text="${p.type()} ?: '—'">FL</td>
                         <td th:text="${p.surname()} ?: '—'">—</td>
                         <td th:text="${p.givenName()} ?: '—'">—</td>
@@ -125,8 +132,10 @@
     </section>
 
     <!-- ISPETTORE (albero segmenti) -->
-    <section th:if="${inspect != null and !inspect.isEmpty()}" class="inspector">
+    <section th:if="${inspect != null and !#lists.isEmpty(inspect)}" class="inspector">
         <h2 th:text="#{edifact.inspector.title}">Ispettore</h2>
+        <p th:if="${inspectTruncated}" class="empty" style="color:var(--warn)"
+           th:text="#{edifact.truncated.inspect(${inspect.size()}, ${totalInspect})}">limitato</p>
         <div th:each="ins,iw : ${inspect}" class="ins-msg">
             <div class="ins-bar" th:classappend="${ins.valid()} ? 'ok' : 'ko'">
                 <span th:text="'#' + (${iw.index}+1)">Messaggio 1</span>
@@ -151,7 +160,7 @@
                     </div>
                 </details>
             </div>
-            <div class="log-console" th:if="${!ins.issues().isEmpty()}">
+            <div class="log-console" th:if="${!#lists.isEmpty(ins.issues())}">
                 <div class="log-line" th:each="i : ${ins.issues()}" th:classappend="${i.severity()}">
                     <span class="lvl" th:text="${i.severity()}">INFO</span>
                     <span class="code" th:text="${i.code()}">CODE</span>

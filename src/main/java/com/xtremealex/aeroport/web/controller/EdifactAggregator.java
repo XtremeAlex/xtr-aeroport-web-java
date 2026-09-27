@@ -35,11 +35,17 @@ final class EdifactAggregator {
             List<PassengerView> passengers,
             List<IssueView> issues,
             boolean hasErrors,
-            boolean hasWarnings) {
+            boolean hasWarnings,
+            String aircraftType) {
 
         /** true se il volo ha almeno un'anomalia ERROR o WARNING da segnalare. */
         public boolean flagged() {
             return hasErrors || hasWarnings;
+        }
+
+        /** true se il tipo di aeromobile è disponibile (arricchimento da DB, quando presente). */
+        public boolean hasAircraftType() {
+            return aircraftType != null && !aircraftType.isBlank();
         }
     }
 
@@ -69,11 +75,25 @@ final class EdifactAggregator {
 
         List<FlightGroup> out = new ArrayList<>();
         for (Acc a : byKey.values()) {
+            // aircraftType: arricchimento futuro da tabella aeromobili (per numero volo/rotta).
+            // Oggi il PAXLST non trasporta il tipo di aeromobile: resta null finché non
+            // verrà popolato un lookup dedicato. Hook: enrichAircraftType(a.flightNumber).
+            String aircraftType = enrichAircraftType(a.flightNumber);
             out.add(new FlightGroup(a.flightNumber, a.carrier, a.departureAirport,
                     a.arrivalAirport, a.departureDateTime, a.count, a.passengers,
-                    a.issues, a.hasErrors, a.hasWarnings));
+                    a.issues, a.hasErrors, a.hasWarnings, aircraftType));
         }
         return out;
+    }
+
+    /**
+     * Punto di arricchimento del tipo aeromobile. Lo standard PAXLST non lo contiene,
+     * quindi oggi ritorna null. In futuro, quando sarà disponibile una tabella aeromobili
+     * (numero volo/rotta -> tipo), qui si aggancerà il lookup (API o DB). Tenerlo isolato
+     * qui evita di sparpagliare la logica nei template.
+     */
+    private static String enrichAircraftType(String flightNumber) {
+        return null;
     }
 
     private static final class Acc {
