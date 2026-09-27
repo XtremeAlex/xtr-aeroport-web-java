@@ -1,0 +1,15 @@
+services:
+  xtr-aeroport-web:
+    build: .
+    container_name: xtr-aeroport-web
+    env_file:
+      - .env
+    ports:
+      - "${HOST_PORT:-8085}:8082"
+    environment:
+      SERVER_PORT: "8082"
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 200M
