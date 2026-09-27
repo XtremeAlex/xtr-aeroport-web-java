@@ -1,6 +1,6 @@
 package com.xtremealex.aeroport.web.controller;
 
-import com.xtremealex.aeroport.web.client.AeroportApiClient;
+import com.xtremealex.aeroport.web.client.AeroportApi;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -9,9 +9,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Controller
 public class AirportController {
 
-    private final AeroportApiClient api;
+    private final AeroportApi api;
 
-    public AirportController(AeroportApiClient api) {
+    public AirportController(AeroportApi api) {
         this.api = api;
     }
 
