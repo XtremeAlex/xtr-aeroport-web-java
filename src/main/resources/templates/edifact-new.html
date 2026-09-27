@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="it">
+<head th:replace="~{fragments/layout :: head(${title})}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+
+<main class="container">
+    <h1>Crea messaggio EDIFACT</h1>
+    <p class="subtitle">Compila volo e passeggeri · genera un PAXLST valido</p>
+    <div class="divider"></div>
+
+    <div class="tabs">
+        <a class="tab" th:href="@{/edifact}">Decodifica</a>
+        <a class="tab active" th:href="@{/edifact/new}">Crea messaggio</a>
+    </div>
+
+    <!-- output generato -->
+    <section th:if="${encoded}" style="margin-bottom:1.5rem">
+        <h2>Messaggio generato</h2>
+        <pre class="edi-code" th:text="${encoded}"></pre>
+    </section>
+
+    <form method="post" th:action="@{/edifact/create}" x-data="paxForm()">
+        <div class="card">
+            <h2 style="margin-top:0">Volo</h2>
+            <div class="pax-form-row" style="border:none;padding:0">
+                <div><label>Tipo</label>
+                    <select name="messageFunction">
+                        <option value="745">745 · Passeggeri</option>
+                        <option value="250">250 · Equipaggio</option>
+                    </select></div>
+                <div><label>Numero volo</label><input name="flightNumber" placeholder="AZ123" required></div>
+                <div><label>Vettore</label><input name="carrier" placeholder="AZ"></div>
+                <div><label>Da (IATA)</label><input name="departureAirport" maxlength="3" placeholder="FCO"></div>
+                <div><label>A (IATA)</label><input name="arrivalAirport" maxlength="3" placeholder="JFK"></div>
+                <div><label>Partenza</label><input name="departureDateTime" placeholder="2026-08-20T12:05"></div>
+                <div><label>Arrivo</label><input name="arrivalDate" placeholder="2026-08-20"></div>
+                <div><label>Reporting party</label><input name="reportingParty" placeholder="AIRLINE"></div>
+            </div>
+        </div>
+
+        <h2>Passeggeri</h2>
+        <template x-for="(p, idx) in pax" :key="idx">
+            <div class="pax-form-row">
+                <div><label>Tipo</label>
+                    <select :name="'pax['+idx+'].type'">
+                        <option value="FL">FL · Pax</option>
+                        <option value="FM">FM · Crew</option>
+                        <option value="DDU">DDU · Transito</option>
+                    </select></div>
+                <div><label>Cognome</label><input :name="'pax['+idx+'].surname'" placeholder="ROSSI"></div>
+                <div><label>Nome</label><input :name="'pax['+idx+'].givenName'" placeholder="MARIO"></div>
+                <div><label>Sesso</label>
+                    <select :name="'pax['+idx+'].gender'">
+                        <option value="">—</option><option value="M">M</option><option value="F">F</option><option value="U">U</option>
+                    </select></div>
+                <div><label>Nazionalità (ISO3)</label><input :name="'pax['+idx+'].nationality'" maxlength="3" placeholder="ITA"></div>
+                <div><label>Nascita</label><input :name="'pax['+idx+'].birthDate'" placeholder="1990-05-10"></div>
+                <div><label>PNR</label><input :name="'pax['+idx+'].pnr'" placeholder="ABC123"></div>
+                <div><label>Tipo doc</label>
+                    <select :name="'pax['+idx+'].docType'">
+                        <option value="P">P · Passaporto</option><option value="I">I · Carta id.</option><option value="V">V · Visto</option>
+                    </select></div>
+                <div><label>Numero doc</label><input :name="'pax['+idx+'].docNumber'" placeholder="YA1234567"></div>
+                <div><label>Scadenza</label><input :name="'pax['+idx+'].docExpiry'" placeholder="2030-01-01"></div>
+                <div><label>Paese emiss.</label><input :name="'pax['+idx+'].docCountry'" maxlength="3" placeholder="ITA"></div>
+                <div style="display:flex;align-items:flex-end">
+                    <button type="button" class="btn btn--ghost" x-on:click="pax.splice(idx,1)"
+                            x-show="pax.length>1">Rimuovi</button>
+                </div>
+            </div>
+        </template>
+
+        <div style="display:flex;gap:.8rem;margin:1rem 0 2rem">
+            <button type="button" class="btn btn--ghost" x-on:click="pax.push({})">+ Passeggero</button>
+            <button type="submit">Genera EDIFACT</button>
+        </div>
+    </form>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<script>
+    function paxForm() { return { pax: [{}] }; }
+</script>
+<script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</body>
+</html>

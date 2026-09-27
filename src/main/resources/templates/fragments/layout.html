@@ -4,21 +4,25 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title th:text="${pageTitle} ?: 'Aeroport'">Aeroport</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/app.css}">
 </head>
 <body>
 
 <header th:fragment="header" class="site-header">
     <nav class="nav">
-        <a class="brand" th:href="@{/}">✈ Aeroport</a>
+        <a class="brand" th:href="@{/}">aeroport</a>
         <a th:href="@{/}">Aeroporti</a>
         <a th:href="@{/countries}">Paesi</a>
-        <a th:href="@{/edifact}">EDIFACT</a>
+        <a th:href="@{/edifact}">Decodifica</a>
+        <a th:href="@{/edifact/new}">Crea EDIFACT</a>
     </nav>
 </header>
 
 <footer th:fragment="footer" class="site-footer">
-    <p>Suite Aeroport · frontend</p>
+    <p>Suite Aeroport · EDIFACT PAXLST</p>
 </footer>
 
 </body>

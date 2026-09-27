@@ -19,8 +19,16 @@ public record DecodeResultView(String receivedAt, String messageId,
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record PassengerView(
             String type, String surname, String givenName, String gender,
-            String nationality, String birthDate,
-            String documentType, String documentNumber, String documentExpiry) {
+            String nationality, String birthDate, String pnr,
+            List<TravelDocumentView> documents) {
+
+        public TravelDocumentView primaryDocument() {
+            return documents == null || documents.isEmpty() ? null : documents.get(0);
+        }
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record TravelDocumentView(String type, String number, String expiry, String issuingCountry) {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)

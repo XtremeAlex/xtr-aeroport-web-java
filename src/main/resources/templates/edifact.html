@@ -5,101 +5,94 @@
 <header th:replace="~{fragments/layout :: header}"></header>
 
 <main class="container">
-    <h1>Convertitore EDIFACT · PAXLST</h1>
+    <h1>Decodifica EDIFACT</h1>
+    <p class="subtitle">PAXLST · carica un log Type B o incolla uno o più messaggi</p>
+    <div class="divider"></div>
 
-    <div class="edi-grid">
-        <!-- DECODE: incolla o carica file (anche log Type B multi-messaggio) -->
-        <section class="edi-card">
-            <h2>Decodifica messaggi</h2>
-            <form method="post" th:action="@{/edifact/decode}" enctype="multipart/form-data">
-                <textarea name="raw" rows="9" class="edi-input" th:text="${rawInput}"
-                          placeholder="Incolla uno o più messaggi EDIFACT, oppure un log Type B (INFO [..] Message Id ..)"></textarea>
-                <div class="edi-file">
-                    <label>oppure carica un file .log/.edi/.txt</label>
-                    <input type="file" name="file" accept=".log,.edi,.txt,.edf">
-                </div>
-                <button type="submit">Decodifica ▸</button>
-            </form>
-        </section>
-
-        <!-- ENCODE -->
-        <section class="edi-card">
-            <h2>Compila messaggio (da JSON)</h2>
-            <form method="post" th:action="@{/edifact/encode}">
-                <textarea name="json" rows="9" class="edi-input" th:text="${jsonInput}"
-                          placeholder='{"messageFunction":"745","flightNumber":"AZ999","departureAirport":"MXP","arrivalAirport":"LHR","passengers":[{"type":"FL","surname":"VERDI","givenName":"LUCA","nationality":"ITA","birthDate":"1990-05-10","documentType":"P","documentNumber":"YB111"}]}'></textarea>
-                <button type="submit">Genera EDIFACT ▸</button>
-            </form>
-        </section>
+    <div class="tabs">
+        <a class="tab active" th:href="@{/edifact}">Decodifica</a>
+        <a class="tab" th:href="@{/edifact/new}">Crea messaggio</a>
     </div>
 
-    <!-- OUTPUT ENCODE -->
-    <section th:if="${encoded}" class="edi-output">
-        <h2>Messaggio EDIFACT generato</h2>
-        <pre class="edi-code" th:text="${encoded}"></pre>
-    </section>
+    <div class="card">
+        <form method="post" th:action="@{/edifact/decode}" enctype="multipart/form-data">
+            <label>Messaggio / log</label>
+            <textarea name="raw" class="edi-input" th:text="${rawInput}"
+                      placeholder="Incolla EDIFACT o log Type B (INFO [..] Message Id ..)"></textarea>
+            <div class="edi-file">
+                <label>oppure carica un file</label>
+                <input type="file" name="file" accept=".log,.edi,.txt,.edf">
+            </div>
+            <button type="submit">Decodifica</button>
+        </form>
+    </div>
 
-    <!-- VOLI AGGREGATI (tabellone) -->
-    <section th:if="${flights != null and !flights.isEmpty()}">
-        <h2 class="board-title">◆ VOLI — DEPARTURES</h2>
-        <div class="board">
-            <div class="board-head">
-                <span>VOLO</span><span>VETTORE</span><span>DA</span><span>A</span>
-                <span>PARTENZA</span><span>MSG</span><span>PAX</span>
-            </div>
-            <div class="board-row" th:each="f : ${flights}">
-                <span class="flap" th:text="${f.flightNumber()} ?: '—'">—</span>
-                <span class="flap" th:text="${f.carrier()} ?: '—'">—</span>
-                <span class="flap" th:text="${f.departureAirport()} ?: '—'">—</span>
-                <span class="flap" th:text="${f.arrivalAirport()} ?: '—'">—</span>
-                <span class="flap" th:text="${f.departureDateTime()} ?: '—'">—</span>
-                <span class="flap" th:text="${f.messageCount()}">0</span>
-                <span class="flap" th:text="${f.passengers().size()}">0</span>
-            </div>
+    <!-- LISTA VOLI (card) con drill-down passeggeri via Alpine -->
+    <section th:if="${flights != null and !flights.isEmpty()}"
+             x-data="{ open: null }">
+        <h2 th:text="'Voli trovati (' + ${flights.size()} + ')'">Voli</h2>
+        <div class="flights">
+            <a th:each="f,it : ${flights}" href="#" class="flight-card"
+               th:attr="data-idx=${it.index}"
+               x-on:click.prevent="open = (open === $el.dataset.idx ? null : $el.dataset.idx)">
+                <div class="fc-route">
+                    <span th:text="${f.departureAirport()} ?: '???'">MXP</span>
+                    <span class="arrow">→</span>
+                    <span th:text="${f.arrivalAirport()} ?: '???'">FCO</span>
+                </div>
+                <div class="fc-no" th:text="'Volo ' + (${f.flightNumber()} ?: '—')">Volo AZ123</div>
+                <div class="fc-meta">
+                    <span th:text="${f.departureDateTime()} ?: ''"></span>
+                    <span class="badge pax" th:text="${f.passengers().size()} + ' PAX'">0 PAX</span>
+                    <span class="badge" th:text="${f.messageCount()} + ' MSG'">1 MSG</span>
+                </div>
+            </a>
         </div>
 
-        <!-- Passeggeri per volo -->
-        <div th:each="f : ${flights}" th:if="${!f.passengers().isEmpty()}">
-            <h3 class="board-subtitle"
-                th:text="'PAX · ' + (${f.flightNumber()} ?: '—') + ' (' + ${f.passengers().size()} + ')'">PAX</h3>
-            <div class="board">
-                <div class="board-head pax">
-                    <span>TIPO</span><span>COGNOME</span><span>NOME</span><span>SEX</span>
-                    <span>NAZ</span><span>NASCITA</span><span>DOC</span><span>NUMERO</span>
-                </div>
-                <div class="board-row pax" th:each="p : ${f.passengers()}">
-                    <span class="flap" th:text="${p.type()}">—</span>
-                    <span class="flap" th:text="${p.surname()}">—</span>
-                    <span class="flap" th:text="${p.givenName()} ?: '—'">—</span>
-                    <span class="flap" th:text="${p.gender()} ?: '—'">—</span>
-                    <span class="flap" th:text="${p.nationality()} ?: '—'">—</span>
-                    <span class="flap" th:text="${p.birthDate()} ?: '—'">—</span>
-                    <span class="flap" th:text="${p.documentType()} ?: '—'">—</span>
-                    <span class="flap" th:text="${p.documentNumber()} ?: '—'">—</span>
-                </div>
+        <!-- passeggeri del volo selezionato -->
+        <template th:each="f,it : ${flights}">
+            <div th:attr="x-show=('open === \'' + ${it.index} + '\'')" style="margin-top:1.5rem" x-cloak>
+                <h2 th:text="'Passeggeri · ' + (${f.flightNumber()} ?: '—')">Passeggeri</h2>
+                <table class="grid">
+                    <thead>
+                    <tr><th>Tipo</th><th>Cognome</th><th>Nome</th><th>Sesso</th><th>Naz.</th>
+                        <th>Nascita</th><th>Doc</th><th>Numero</th><th>PNR</th></tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="p : ${f.passengers()}">
+                        <td th:text="${p.type()}">FL</td>
+                        <td th:text="${p.surname()}">—</td>
+                        <td th:text="${p.givenName()} ?: '—'">—</td>
+                        <td th:text="${p.gender()} ?: '—'">—</td>
+                        <td th:text="${p.nationality()} ?: '—'">—</td>
+                        <td th:text="${p.birthDate()} ?: '—'">—</td>
+                        <td th:text="${p.primaryDocument() != null ? p.primaryDocument().type() : '—'}">—</td>
+                        <td th:text="${p.primaryDocument() != null ? p.primaryDocument().number() : '—'}">—</td>
+                        <td th:text="${p.pnr()} ?: '—'">—</td>
+                    </tr>
+                    </tbody>
+                </table>
             </div>
-        </div>
+        </template>
     </section>
 
-    <!-- ISPETTORE EDI: albero segmenti/elementi + delimitatori + log console -->
+    <!-- ISPETTORE (albero segmenti) -->
     <section th:if="${inspect != null and !inspect.isEmpty()}" class="inspector">
-        <h2>Ispettore EDI</h2>
+        <h2>Ispettore</h2>
         <div th:each="ins,iw : ${inspect}" class="ins-msg">
             <div class="ins-bar" th:classappend="${ins.valid()} ? 'ok' : 'ko'">
                 <span th:text="'Messaggio ' + (${iw.index}+1)">Messaggio 1</span>
-                <span th:if="${ins.messageId()}" class="mono" th:text="${ins.messageId()}"></span>
+                <span class="mono" th:if="${ins.messageId()}" th:text="${ins.messageId()}"></span>
                 <span th:if="${ins.receivedAt()}" th:text="${ins.receivedAt()}"></span>
                 <span class="delims" th:if="${ins.delimiters()}"
-                      th:text="'delim: el[' + ${ins.delimiters().element()} + '] comp[' + ${ins.delimiters().component()} + '] term[' + ${ins.delimiters().segment()} + '] rel[' + ${ins.delimiters().release()} + ']'"></span>
+                      th:text="'el[' + ${ins.delimiters().element()} + '] term[' + ${ins.delimiters().segment()} + ']'"></span>
             </div>
-
-            <!-- albero segmenti -->
             <div class="tree">
-                <details th:each="seg : ${ins.segments()}" th:open="${!seg.known()}">
+                <details th:each="seg : ${ins.segments()}">
                     <summary th:classappend="${seg.known()} ? '' : 'orphan'">
                         <span class="seg-tag" th:text="${seg.tag()}">TAG</span>
                         <span class="seg-desc" th:if="${seg.known()}" th:text="${seg.description()}">desc</span>
-                        <span class="seg-desc" th:unless="${seg.known()}">segmento non previsto dallo schema</span>
+                        <span class="seg-desc" th:unless="${seg.known()}">non previsto dallo schema</span>
                         <span class="seg-usage" th:if="${seg.usage()}" th:text="${seg.usage()}">R</span>
                     </summary>
                     <div class="elements">
@@ -110,45 +103,23 @@
                     </div>
                 </details>
             </div>
-
-            <!-- log console -->
             <div class="log-console" th:if="${!ins.issues().isEmpty()}">
                 <div class="log-line" th:each="i : ${ins.issues()}" th:classappend="${i.severity()}">
                     <span class="lvl" th:text="${i.severity()}">INFO</span>
                     <span class="code" th:text="${i.code()}">CODE</span>
-                    <span class="msg" th:text="${i.message()}">msg</span>
-                    <span class="tag" th:if="${i.segmentTag()}" th:text="'@' + ${i.segmentTag()}"></span>
+                    <span th:text="${i.message()}">msg</span>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- MESSAGGI RICEVUTI (ordinati per timestamp) -->
-    <section th:if="${results != null and !results.isEmpty()}" class="edi-messages">
-        <h2>Messaggi ricevuti <span th:text="'(' + ${results.size()} + ')'">(0)</span></h2>
-        <table class="msg-table">
-            <thead>
-            <tr><th>#</th><th>RICEVUTO</th><th>MESSAGE ID</th><th>VOLO</th><th>STATO</th><th>DIAGNOSTICA</th></tr>
-            </thead>
-            <tbody>
-            <tr th:each="r,it : ${results}" th:classappend="${r.valid()} ? 'ok' : 'ko'">
-                <td th:text="${it.index}+1">1</td>
-                <td th:text="${r.receivedAt()} ?: '—'">—</td>
-                <td class="mono" th:text="${r.messageId()} ?: '—'">—</td>
-                <td th:text="${r.message() != null ? r.message().flightNumber() : '—'}">—</td>
-                <td th:text="${r.valid()} ? 'OK' : 'ERRORI'">—</td>
-                <td>
-                    <ul class="issues">
-                        <li th:each="i : ${r.issues()}" th:classappend="${i.severity()}"
-                            th:text="'[' + ${i.severity()} + '] ' + ${i.code()} + ' — ' + ${i.message()}">issue</li>
-                    </ul>
-                </td>
-            </tr>
-            </tbody>
-        </table>
+    <section th:if="${error}" class="card" style="border-color:var(--accent)">
+        <p th:text="${error}">errore</p>
     </section>
 </main>
 
 <footer th:replace="~{fragments/layout :: footer}"></footer>
+<style>[x-cloak]{display:none!important}</style>
+<script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </body>
 </html>
